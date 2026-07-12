@@ -4,6 +4,7 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 import type { Ticket } from '../types/ticket';
 import { ActiveTriageFeed } from './ActiveTriageFeed';
 
+
 interface UserLocation {
   lat: number;
   lng: number;
@@ -134,20 +135,19 @@ tickets.forEach((ticket) => {
   el.style.width = '24px';
   el.style.height = '24px';
 
-  const urgency = ticket.aiAnalysis?.urgency;
+  const rawUrgency = (ticket.aiAnalysis?.urgency || '').toUpperCase();
   const isConstruction = ticket.aiAnalysis?.incidentType === 'CONSTRUCTION';
+  
 
   // Use Amber for construction hazards, otherwise standard urgency colors
-  const pinColor = isConstruction
-    ? '#f59e0b' // Amber color for construction
-    : urgency === 'CRITICAL'
-    ? '#ef4444'
-    : urgency === 'HIGH'
-    ? '#f97316'
-    : urgency === 'MEDIUM' 
-    ? '#f59e0b'
-    : '#0ea5e9';
-
+ const pinColor =
+    rawUrgency === 'CRITICAL'
+      ? '#ef4444' // Red
+      : rawUrgency === 'HIGH' || rawUrgency === 'MAJOR'
+      ? '#f97316' // Orange
+      : rawUrgency === 'MEDIUM' || rawUrgency === 'MINOR'
+      ? '#f59e0b' // Amber
+      : '#0ea5e9'; // Sky Blue (LOW or default)
   const isSelected = selectedTicket?._id === ticket._id;
 
   // Render Lucide Construction SVG if CONSTRUCTION, else AlertTriangle SVG
