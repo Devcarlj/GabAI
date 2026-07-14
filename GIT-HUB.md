@@ -12,16 +12,20 @@ We **never** commit secret passwords or database connection strings directly to 
 *Note: Your `.env` file is already listed in `.gitignore`, so it will stay safely on your local computer and will never be pushed to GitHub.*
 ---## 🌿 2. The Feature Branch Workflow
 Our `main` branch is protected and locked down. **You cannot push code directly to `main` (`git push origin main` will be rejected).** All work must be done on a separate branch and submitted via a Pull Request.
-### Step-by-Step Cycle for Every New Feature:#### 1️⃣ Start with a Clean SlateBefore starting any new task, switch to your local `main` branch and pull the latest changes that other teammates have merged:
+### Step-by-Step Cycle for Every New Feature:
+
+#### 1️⃣ Start with a Clean SlateBefore starting any new task, switch to your local `main` branch and pull the latest changes that other teammates have merged:
 
 ```bash
 git checkout main
 git pull origin main
 ```
-#### 2️⃣ Create a Fresh Feature BranchCreate a brand-new branch named after the task you are working on. Use prefixes like `feature/` or `bugfix/`:```bash
+#### 2️⃣ Create a Fresh Feature BranchCreate a brand-new branch named after the task you are working on. Use prefixes like `feature/` or `bugfix/`:
+```bash
 git checkout -b feature/add-login-page
 ```
-#### 3️⃣ Write Code and Commit Your ChangesWork on your feature in VS Code. When you are ready, stage and commit your work locally:```bash
+#### 3️⃣ Write Code and Commit Your ChangesWork on your feature in VS Code. When you are ready, stage and commit your work locally:
+```bash
 git add .
 git commit -m "Add user login interface and form validation"
 ```
