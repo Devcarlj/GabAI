@@ -15,7 +15,6 @@ import { fetchNearbyLGUs } from '../api/nearbyLgus';
 import type { IncidentType } from '../types/ticket';
 
 
-
 const MetricCards: React.FC<{ tickets: Ticket[]; compact?: boolean }> = ({ tickets, compact }) => {
   const cardClass = compact
     ? 'mobile-metric-card bg-[#090f1a] border border-slate-900 flex flex-col justify-between'
