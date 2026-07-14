@@ -4,6 +4,7 @@ import { Ticket, AIAnalysis } from '../types/ticket.js';
 import TicketModel from '../models/TicketModel.js'; // Your Mongoose Schema
 import { forwardGeocode } from './geocodeController.js';
 import uploadImageCloudinary from '../utils/uploadImageCloudinary.js'; 
+import { findAndStoreNearbyLGUs } from './nearbyLguController.js';
 
 
 // Initialize the Google Gen AI SDK
@@ -201,8 +202,17 @@ if (photoUrl && photoUrl.startsWith('data:')) {
           createdAt: new Date().toISOString(),
         };
 
-        const savedTicket = await TicketModel.create(newTicketData);
-        res.status(201).json(savedTicket);
+      const savedTicket = await TicketModel.create(newTicketData);
+      res.status(201).json(savedTicket);
+
+      // fire-and-forget — response already sent, this runs after
+      if (validatedCoordinates) {
+        findAndStoreNearbyLGUs(
+          String(savedTicket._id),
+          validatedCoordinates.lat,
+          validatedCoordinates.lng
+        ).catch((err) => console.error('Background LGU lookup crashed:', err));
+      }
 
       } catch (error) {
         console.error('Error in Gemini Triage Controller:', error);

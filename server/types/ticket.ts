@@ -31,3 +31,39 @@ export interface CreateTicketPayload {
   coordinates?: { lat: number; lng: number };
   locationLabel?: string;
 }
+
+export interface NearbyLGU {
+  name: string;
+  lat: number;
+  lng: number;
+  distanceKm: number;
+}
+
+export type NearbyLGUStatus = 'idle' | 'pending' | 'ready' | 'failed';
+
+export interface Ticket {
+  _id?: string;
+  ticketId: string;
+  rawText: string;
+  photoUrl?: string;
+  coordinates?: { lat: number; lng: number };
+  coordinatesSource?: 'gps' | 'geocoded' | 'none';
+  locationLabel?: string;
+  aiAnalysis: AIAnalysis;
+  dispatchOrder: string;
+  createdAt: string;
+  nearbyLGUs?: NearbyLGU[];          // ← add
+  nearbyLGUsStatus?: NearbyLGUStatus; // ← add
+}
+
+
+export interface NearbyLGU {
+  name: string;
+  lat: number;
+  lng: number;
+  distanceKm: number;
+  address?: string;
+  phone?: string;
+  website?: string;
+  openingHours?: string;
+}

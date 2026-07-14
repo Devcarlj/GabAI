@@ -3,12 +3,17 @@ import axios from 'axios';
 import { Link } from 'react-router-dom';
 import type { Ticket } from '../types/ticket';
 import { IncidentDetailCard } from '../components/IncidentDetailCard';
+import { LGUDetailCard } from '../components/Lgudetailcard';
 import { NavbarHeader } from '../components/NavbarHeader';
 import { MapViewSection } from '../components/MapViewSection';
 import { ActiveTriageFeed } from '../components/ActiveTriageFeed';
 import { fetchReverseGeocode } from '../api/geocode';
 import { SubmissionForm } from '../components/SubmissionForm';
 import { MobileSubmissionBar } from '../components/MobileSubmissionBar';
+import type { NearbyLGU, NearbyLGUStatus } from '../types/ticket';
+import { fetchNearbyLGUs } from '../api/nearbyLgus';
+import type { IncidentType } from '../types/ticket';
+
 
 const MetricCards: React.FC<{ tickets: Ticket[]; compact?: boolean }> = ({ tickets, compact }) => {
   const cardClass = compact
@@ -133,12 +138,13 @@ const SidebarNavLinks: React.FC<{ onNavigate?: () => void }> = ({ onNavigate }) 
 );
 
 export const Home: React.FC = () => {
+  const [incidentType, setIncidentType] = useState<IncidentType>('WARNING');
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
   const [inputText, setInputText] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
   const [photo, setPhoto] = useState<string | null>(null);
-  const [activeRightPanel, setActiveRightPanel] = useState<'submission' | 'detail'>('submission');
+  const [activeRightPanel, setActiveRightPanel] = useState<'submission' | 'detail' | 'lgu'>('submission');
   const [isRightPanelOpen, setIsRightPanelOpen] = useState<boolean>(true);
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState<boolean>(false);
   const [isMobileDetailOpen, setIsMobileDetailOpen] = useState<boolean>(false);
@@ -153,6 +159,83 @@ const [locationLabel, setLocationLabel] = useState<string | null>(null);
 
 const watchIdRef = React.useRef<number | null>(null);
 const lastGeocodeRef = React.useRef<{ lat: number; lng: number } | null>(null);
+
+// Nearby-LGU state — lives here because it's shared between IncidentDetailCard
+// (button + status) and MapViewSection (pins + camera framing), which are siblings.
+const [nearbyLGUs, setNearbyLGUs] = useState<NearbyLGU[]>([]);
+const [nearbyLGUsStatus, setNearbyLGUsStatus] = useState<NearbyLGUStatus>('idle');
+const [showNearLGUs, setShowNearLGUs] = useState<boolean>(false);
+const [selectedLGU, setSelectedLGU] = useState<NearbyLGU | null>(null);
+const [isMobileLguOpen, setIsMobileLguOpen] = useState<boolean>(false);
+const pollTimeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+
+const clearNearLGUs = () => {
+  if (pollTimeoutRef.current) {
+    clearTimeout(pollTimeoutRef.current);
+    pollTimeoutRef.current = null;
+  }
+  setShowNearLGUs(false);
+  setNearbyLGUs([]);
+  setNearbyLGUsStatus('idle');
+  setSelectedLGU(null);
+  setIsMobileLguOpen(false);
+  setActiveRightPanel((current) => (current === 'lgu' ? 'detail' : current));
+};
+
+const pollNearbyLGUs = async (ticketId: string) => {
+  try {
+    const { status, lgus } = await fetchNearbyLGUs(ticketId);
+    setNearbyLGUsStatus(status);
+    if (status === 'ready') {
+      setNearbyLGUs(lgus);
+      return;
+    }
+    if (status === 'failed') return;
+    // still pending (or the background job hasn't started writing yet) — keep polling
+    pollTimeoutRef.current = setTimeout(() => pollNearbyLGUs(ticketId), 2000);
+  } catch (err) {
+    console.error('Failed to poll nearby LGUs:', err);
+    setNearbyLGUsStatus('failed');
+  }
+};
+
+const handleToggleNearLGUs = () => {
+  if (!selectedTicket?._id) return;
+  if (showNearLGUs) {
+    clearNearLGUs();
+    return;
+  }
+  setShowNearLGUs(true);
+  setNearbyLGUsStatus('pending');
+  void pollNearbyLGUs(selectedTicket._id);
+};
+
+const handleSelectLGU = (lgu: NearbyLGU) => {
+  setSelectedLGU(lgu);
+  setActiveRightPanel('lgu');
+  setIsRightPanelOpen(true);
+
+  const isMobile = window.matchMedia('(max-width: 1023px)').matches;
+  if (isMobile) {
+    setIsMobileLguOpen(true);
+  }
+};
+
+const handleBackToIncident = () => {
+  setActiveRightPanel('detail');
+  setIsMobileLguOpen(false);
+};
+
+const handleCloseMobileLgu = () => {
+  setIsMobileLguOpen(false);
+};
+
+// Stop polling if the component unmounts mid-flight
+useEffect(() => {
+  return () => {
+    if (pollTimeoutRef.current) clearTimeout(pollTimeoutRef.current);
+  };
+}, []);
 
 // Turns raw coordinates into a readable address, e.g. "Gen. T. de Leon, Valenzuela City"
 // via our own /api/geocode proxy (see server/controllers/geocodeController.ts) — keeps the
@@ -231,6 +314,7 @@ useEffect(() => {
 
 // 1. Selecting a ticket
 const handleSelectTicket = (ticket: Ticket | null) => {
+  clearNearLGUs();
   if (!ticket) {
     // User unselected or closed ticket
     setSelectedTicket(null);
@@ -324,6 +408,7 @@ const handleCloseMobileDetail = () => {
       const response = await axios.post<Ticket>('/api/tickets', {
       rawText: inputText,
       photoUrl: photo || '',
+      incidentType,
       coordinates: userLocation ? { lat: userLocation.lat, lng: userLocation.lng } : undefined,
       locationLabel: userLocation ? locationLabel || undefined : undefined,
     });
@@ -337,6 +422,7 @@ const handleCloseMobileDetail = () => {
       setLoading(false);
     }
   };
+
 
   return (
     <div className="flex min-h-screen lg:h-screen bg-[#070b12] text-slate-100 font-sans antialiased overflow-x-hidden lg:overflow-hidden select-none">
@@ -401,6 +487,10 @@ const handleCloseMobileDetail = () => {
                 gpsLoading={gpsLoading}
                 locationLabel={locationLabel}
                 onZoomComplete={handleMapZoomComplete}
+                nearbyLGUs={nearbyLGUs}
+                showNearLGUs={showNearLGUs}
+                onPhViewClick={clearNearLGUs}
+                onSelectLGU={handleSelectLGU}
               />
             </div>
 
@@ -471,14 +561,25 @@ const handleCloseMobileDetail = () => {
                   gpsLoading={gpsLoading}
                   userLocation={userLocation}
                   locationLabel={locationLabel}
+                  incidentType={incidentType}          
+                  setIncidentType={setIncidentType}      
                   onToggleGps={handleToggleGps}
                   onPhotoChange={handlePhotoChange}
                   onRemovePhoto={handleRemovePhoto}
                   onSubmit={handleSubmit}
                 />
+              ) : activeRightPanel === 'lgu' ? (
+                <div className="h-full">
+                  <LGUDetailCard lgu={selectedLGU} onBack={handleBackToIncident} />
+                </div>
               ) : (
                   <div className="h-full">
-                    <IncidentDetailCard ticket={selectedTicket} />
+                    <IncidentDetailCard
+                      ticket={selectedTicket}
+                      showNearLGUs={showNearLGUs}
+                      nearbyLGUsStatus={nearbyLGUsStatus}
+                      onToggleNearLGUs={handleToggleNearLGUs}
+                    />
                   </div>
                 )}
               </div>
@@ -562,7 +663,48 @@ const handleCloseMobileDetail = () => {
                 </button>
               </div>
               <div className="flex-1 overflow-y-auto p-4 min-h-0">
-                <IncidentDetailCard ticket={selectedTicket} />
+                <IncidentDetailCard
+                  ticket={selectedTicket}
+                  showNearLGUs={showNearLGUs}
+                  nearbyLGUsStatus={nearbyLGUsStatus}
+                  onToggleNearLGUs={handleToggleNearLGUs}
+                />
+              </div>
+            </div>
+          </>
+        )}
+
+        {/* MOBILE ONLY: LGU detail bottom sheet */}
+        {isMobileLguOpen && selectedLGU && (
+          <>
+            <div
+              className="lg:hidden mobile-bottom-sheet-backdrop"
+              onClick={handleCloseMobileLgu}
+              aria-hidden="true"
+            />
+            <div className="lg:hidden mobile-bottom-sheet">
+              <div className="flex items-center justify-between px-4 py-3 border-b border-slate-900 shrink-0">
+                <span className="text-[10px] font-bold tracking-wider text-slate-400 uppercase font-mono">
+                  LGU Details
+                </span>
+                <button
+                  onClick={handleCloseMobileLgu}
+                  className="p-1.5 text-slate-500 hover:text-slate-300 transition-colors cursor-pointer"
+                  aria-label="Close LGU detail"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              <div className="flex-1 overflow-y-auto p-4 min-h-0">
+                <LGUDetailCard
+                  lgu={selectedLGU}
+                  onBack={() => {
+                    handleBackToIncident();
+                    setIsMobileDetailOpen(true);
+                  }}
+                />
               </div>
             </div>
           </>

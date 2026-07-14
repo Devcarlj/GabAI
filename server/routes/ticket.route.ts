@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { createAndTriageTicket } from '../controllers/triageController.js';
 import TicketModel from '../models/TicketModel.js';
+import { getNearbyLGUs } from '../controllers/nearbyLguController.js';
 
 const router = Router();
 
@@ -16,5 +17,7 @@ router.get('/tickets', async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch tickets.' });
   }
 });
+
+router.get('/tickets/:id/nearby-lgus', getNearbyLGUs);
 
 export default router;

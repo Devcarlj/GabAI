@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
-import type { Ticket } from '../types/ticket';
+import type { Ticket,  NearbyLGU } from '../types/ticket';
 import { ActiveTriageFeed } from './ActiveTriageFeed';
 
 
@@ -20,6 +20,10 @@ interface MapViewSectionProps {
   gpsLoading?: boolean;
   locationLabel?: string | null;
   onZoomComplete?: () => void;
+  nearbyLGUs?: NearbyLGU[];
+  showNearLGUs?: boolean;
+  onPhViewClick?: () => void;
+   onSelectLGU?: (lgu: NearbyLGU) => void;
 }
 
 // Helper to get camera settings based on screen width
@@ -61,6 +65,10 @@ export const MapViewSection: React.FC<MapViewSectionProps> = ({
   gpsLoading = false,
   locationLabel = null,
   onZoomComplete,
+  nearbyLGUs = [],
+  showNearLGUs = false,
+  onPhViewClick,
+  onSelectLGU,
 }) => {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const [map, setMap] = useState<maplibregl.Map | null>(null);
@@ -73,6 +81,7 @@ export const MapViewSection: React.FC<MapViewSectionProps> = ({
 
   const handleZoomToPhilippines = () => {
     if (!map) return;
+    onPhViewClick?.();
     const { center, zoom } = getResponsiveMapSettings();
 
     map.flyTo({
@@ -216,6 +225,9 @@ tickets.forEach((ticket) => {
   // 3. Zoom to selected ticket when user picks an incident
 // Track previous selected ticket ID to avoid zooming during parent re-renders (like typing)
 const prevSelectedIdRef = useRef<string | null>(null);
+const lguMarkersRef = useRef<maplibregl.Marker[]>([]);
+
+
 
 // 3. Zoom to selected ticket ONLY when focusKey changes or a NEW ticket is picked
 useEffect(() => {
@@ -307,6 +319,64 @@ useEffect(() => {
     }
     prevGpsActiveRef.current = isGpsActive;
   }, [map, isGpsActive, userLocation]);
+
+  // 6. Render nearby-LGU pins and frame the map so the incident stays dead-center.
+useEffect(() => {
+  if (!map) return;
+
+  lguMarkersRef.current.forEach((m) => m.remove());
+  lguMarkersRef.current = [];
+
+  if (!showNearLGUs || !selectedTicket || nearbyLGUs.length === 0) return;
+
+  const coords = getTicketCoordinates(selectedTicket);
+  if (!coords) return;
+  const [incidentLng, incidentLat] = coords;
+
+  nearbyLGUs.forEach((lgu) => {
+    const el = document.createElement('div');
+    el.className = 'cursor-pointer group';
+    el.style.width = '20px';
+    el.style.height = '20px';
+    el.title = `${lgu.name} (${lgu.distanceKm} km)`;
+    el.innerHTML = `
+      <div class="flex items-center justify-center p-1 rounded-full border-2 border-[#070b12] bg-emerald-500 shadow-md transition-transform duration-150 group-hover:scale-125">
+        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/>
+        </svg>
+      </div>`;
+
+    el.addEventListener('click', (e) => {
+      e.stopPropagation();
+      onSelectLGU?.(lgu);
+    });
+
+    const marker = new maplibregl.Marker({ element: el })
+      .setLngLat([lgu.lng, lgu.lat])
+      .addTo(map);
+    lguMarkersRef.current.push(marker);
+  });
+
+  // Symmetric bounding box around the incident, sized to the farthest LGU.
+  // This is what keeps the incident visually centered — fitBounds on the raw
+  // point cluster would drag the center toward wherever the LGUs happen to sit.
+  const maxDistKm = Math.max(...nearbyLGUs.map((l) => l.distanceKm), 1);
+  const latOffset = maxDistKm / 111;
+  const lngOffset = maxDistKm / (111 * Math.cos((incidentLat * Math.PI) / 180));
+
+  map.fitBounds(
+    [
+      [incidentLng - lngOffset, incidentLat - latOffset],
+      [incidentLng + lngOffset, incidentLat + latOffset],
+    ],
+    { padding: 60, pitch: 0, essential: true, duration: 1200 }
+  );
+
+  return () => {
+    lguMarkersRef.current.forEach((m) => m.remove());
+    lguMarkersRef.current = [];
+  };
+}, [map, showNearLGUs, nearbyLGUs, selectedTicket]);
 
   return (
     <div className="flex-1 relative bg-[#09101d] rounded-2xl border border-slate-900 overflow-hidden min-h-0 w-full h-full">

@@ -9,7 +9,12 @@ import geocodeRoutes from "./routes/geocode.route.js"; // 👈 Reverse-geocode p
 
 const app = express();
 const port = process.env.PORT || 5000;
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://asulizc_db_user:ypgMkhdwdmjqFjkn@gabai-main-db.vjwiro8.mongodb.net/';
+const MONGODB_URI = process.env.MONGODB_URI;
+
+if (!MONGODB_URI) {
+  console.error('❌ Missing MONGODB_URI environment variable');
+  process.exit(1);
+}
 
 // 1. Precise CORS Configuration
 const allowedOrigins = process.env.FRONTEND_URL

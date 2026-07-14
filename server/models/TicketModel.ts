@@ -31,6 +31,32 @@ const TicketSchema: Schema = new Schema({
   },
   dispatchOrder: { type: String, required: true },
   createdAt: { type: String, default: () => new Date().toISOString() },
+
+  // inside TicketSchema, alongside the other fields
+nearbyLGUs: {
+  type: [
+    new Schema(
+      {
+        name: { type: String, required: true },
+        lat: { type: Number, required: true },
+        lng: { type: Number, required: true },
+        distanceKm: { type: Number, required: true },
+        address: { type: String, required: false },
+        phone: { type: String, required: false },
+        website: { type: String, required: false },
+        openingHours: { type: String, required: false },
+      },
+      { _id: false }
+    ),
+  ],
+  default: undefined,
+},
+
+nearbyLGUsStatus: {
+  type: String,
+  enum: ['idle', 'pending', 'ready', 'failed'],
+  default: 'idle',
+},
 });
 
 // 1. Create the model

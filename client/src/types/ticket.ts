@@ -15,6 +15,15 @@ export interface TicketCoordinates {
   lng: number;
 }
 
+export interface NearbyLGU {
+  name: string;
+  lat: number;
+  lng: number;
+  distanceKm: number;
+}
+
+export type NearbyLGUStatus = 'idle' | 'pending' | 'ready' | 'failed';
+
 export interface Ticket {
   _id?: string;
   ticketId: string;
@@ -30,6 +39,8 @@ export interface Ticket {
   aiAnalysis: AIAnalysis;
   dispatchOrder: string;
   createdAt: string;
+  nearbyLGUs?: NearbyLGU[];
+  nearbyLGUsStatus?: NearbyLGUStatus;
 }
 
 // Payload sent from the Citizen Mobile View to the Express API
@@ -39,4 +50,15 @@ export interface CreateTicketPayload {
   incidentType?: IncidentType;
   coordinates?: TicketCoordinates;
   locationLabel?: string;
+}
+
+export interface NearbyLGU {
+  name: string;
+  lat: number;
+  lng: number;
+  distanceKm: number;
+  address?: string;
+  phone?: string;
+  website?: string;
+  openingHours?: string;
 }
