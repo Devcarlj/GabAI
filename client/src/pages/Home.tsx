@@ -3,7 +3,7 @@ import axios from 'axios';
 import { Link } from 'react-router-dom';
 import type { Ticket } from '../types/ticket';
 import { IncidentDetailCard } from '../components/IncidentDetailCard';
-import { LGUDetailCard } from '../components/Lgudetailcard';
+import { LGUDetailCard } from '../components/LGUdetailcard';
 import { NavbarHeader } from '../components/NavbarHeader';
 import { MapViewSection } from '../components/MapViewSection';
 import { ActiveTriageFeed } from '../components/ActiveTriageFeed';
