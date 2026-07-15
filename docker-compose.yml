@@ -1,3 +1,5 @@
+version: '3.8'
+
 services:
   # Backend API service
   server:
@@ -6,11 +8,20 @@ services:
       dockerfile: Dockerfile
     ports:
       - "5000:5000"
-    volumes:
-      - ./server:/app
-      - /app/node_modules
     env_file:
       - ./server/.env
+    # 🌟 NATIVE WATCH SYSTEM
+    develop:
+      watch:
+        # Syncs everything from your local /server folder to the container's /app folder instantly
+        - path: ./server
+          action: sync
+          target: /app
+          ignore:
+            - ./server/node_modules
+        # If your teammates pull a Git update that changes package.json, automatically rebuild the image
+        - path: ./server/package.json
+          action: rebuild
 
   # Frontend Client service
   client:
@@ -21,8 +32,17 @@ services:
       - "5173:5173"
     environment:
       - VITE_SERVER_URL=http://server:5000
-    volumes:
-      - ./client:/app
-      - /app/node_modules
     depends_on:
       - server
+    # 🌟 NATIVE WATCH SYSTEM
+    develop:
+      watch:
+        # Syncs everything from your local /client folder to the container's /app folder instantly
+        - path: ./client
+          action: sync
+          target: /app
+          ignore:
+            - ./client/node_modules
+        # Automatically rebuild the client image if dependencies are added/changed
+        - path: ./client/package.json
+          action: rebuild
