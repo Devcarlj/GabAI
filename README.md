@@ -30,7 +30,7 @@ mkdir GabAIyan
 cd GabAIyan
 
 # Download the code into this folder (do NOT forget the '.' at the end)
-git clone [https://github.com/Devcarlj/GabAI.git](https://github.com/Devcarlj/GabAI.git) .
+git clone https://github.com/Devcarlj/GabAI.git .
 
 ```
 
