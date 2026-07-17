@@ -13,6 +13,7 @@ import { MobileSubmissionBar } from '../components/MobileSubmissionBar';
 import type { NearbyLGU, NearbyLGUStatus } from '../types/ticket';
 import { fetchNearbyLGUs } from '../api/nearbyLgus';
 import type { IncidentType } from '../types/ticket';
+import { GpsPermissionModal } from '../components/GpsPermissionModal';
 
 
 const MetricCards: React.FC<{ tickets: Ticket[]; compact?: boolean }> = ({ tickets, compact }) => {
@@ -127,7 +128,7 @@ const SidebarNavLinks: React.FC<{ onNavigate?: () => void }> = ({ onNavigate }) 
     <Link
       to="/login"
       onClick={onNavigate}
-      className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-[#D0FD1B] hover:bg-slate-900/50 transition-colors"
+      className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-brand-teal hover:bg-slate-900/50 transition-colors"
     >
       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
@@ -274,14 +275,20 @@ const handleToggleGps = () => {
     return;
   }
 
+  // Just open the modal here. 
+  setShowGpsModal(true);
+};
+
+const handleConfirmGpsPermission = () => {
+  setShowGpsModal(false);
+
   if (!navigator.geolocation) {
     alert('Geolocation is not supported by your browser.');
     return;
   }
 
   setGpsLoading(true);
-  // watchPosition (not getCurrentPosition) so the pin on the map actually
-  // tracks the user live while the toggle stays on, on both desktop and mobile.
+  
   watchIdRef.current = navigator.geolocation.watchPosition(
     (position) => {
       const coords = {
@@ -423,6 +430,8 @@ const handleCloseMobileDetail = () => {
     }
   };
 
+  const [showGpsModal, setShowGpsModal] = useState<boolean>(false);
+
 
   return (
     <div className="flex min-h-screen lg:h-screen bg-[#070b12] text-slate-100 font-sans antialiased overflow-x-hidden lg:overflow-hidden select-none">
@@ -450,7 +459,7 @@ const handleCloseMobileDetail = () => {
         <Link
           to="/login"
           title="Operator Login"
-          className="p-2 text-slate-500 hover:text-[#D0FD1B] transition-colors duration-200 cursor-pointer"
+          className="p-2 text-slate-500 hover:text-brand-teal transition-colors duration-200 cursor-pointer"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
@@ -465,7 +474,7 @@ const handleCloseMobileDetail = () => {
         <NavbarHeader onToggleDrawer={() => setIsMobileDrawerOpen(true)} />
 
         {/* MOBILE ONLY: Compact metrics — 2 rows × 3 columns */}
-        <div className="mobile-metrics-row border-b border-slate-900/50 shrink-0 lg:!hidden">
+        <div className="mobile-metrics-row border-b border-slate-900/50 shrink-0 lg:hidden!">
           <MetricCards tickets={tickets} compact />
         </div>
 
@@ -476,7 +485,7 @@ const handleCloseMobileDetail = () => {
           <div className={`${isRightPanelOpen ? 'lg:col-span-2' : 'lg:col-span-3'} flex flex-col gap-0 lg:gap-4 lg:overflow-hidden lg:h-full min-h-0 transition-all duration-300`}>
 
             {/* GIS MAP CONTAINER */}
-            <div className="h-[42vh] min-h-[240px] lg:flex-1 lg:h-full relative bg-[#09101d] rounded-none lg:rounded-2xl border-0 lg:border border-slate-900 overflow-hidden shrink-0 lg:shrink lg:min-h-0">
+            <div className="h-[42vh] min-h-60 lg:flex-1 lg:h-full relative bg-[#09101d] rounded-none lg:rounded-2xl border-0 lg:border border-slate-900 overflow-hidden shrink-0 lg:shrink lg:min-h-0">
               <MapViewSection
                 tickets={tickets}
                 selectedTicket={selectedTicket}
@@ -709,6 +718,13 @@ const handleCloseMobileDetail = () => {
             </div>
           </>
         )}
+
+        {/* PERSISTENT HIGH-CONTRAST DATA CONFIRMATION MODAL */}
+      <GpsPermissionModal
+        isOpen={showGpsModal}
+        onClose={() => setShowGpsModal(false)}
+        onConfirm={handleConfirmGpsPermission}
+      />
     </div>
   );
 };

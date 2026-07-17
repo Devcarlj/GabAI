@@ -273,36 +273,36 @@ useEffect(() => {
     };
   }, [map, selectedTicket, focusKey, onZoomComplete]);
 
-  // 4. Render / update the live "You Are Here" GPS marker
-  useEffect(() => {
-    if (!map) return;
+ // 4. Render / update the live "You Are Here" GPS marker
+useEffect(() => {
+  if (!map) return;
 
-    if (!userLocation) {
-      userMarkerRef.current?.remove();
-      userMarkerRef.current = null;
-      return;
-    }
+  if (!userLocation) {
+    userMarkerRef.current?.remove();
+    userMarkerRef.current = null;
+    return;
+  }
 
-    const { lat, lng } = userLocation;
+  const { lat, lng } = userLocation;
 
-    if (userMarkerRef.current) {
-      userMarkerRef.current.setLngLat([lng, lat]);
-    } else {
-      const el = document.createElement('div');
-      el.className = 'relative flex items-center justify-center';
-      el.style.width = '26px';
-      el.style.height = '26px';
-      el.innerHTML = `
-        <span class="absolute inline-flex h-6 w-6 rounded-full opacity-60 animate-ping" style="background-color:#3b82f6"></span>
-        <span class="absolute inline-flex h-4 w-4 rounded-full opacity-90" style="background-color:#3b82f6"></span>
-        <div class="relative h-3 w-3 rounded-full bg-white border-2 border-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.9)]"></div>
-      `;
+  if (userMarkerRef.current) {
+    userMarkerRef.current.setLngLat([lng, lat]);
+  } else {
+    const el = document.createElement('div');
+    el.className = 'relative flex items-center justify-center';
+    el.style.width = '26px';
+    el.style.height = '26px';
+    el.innerHTML = `
+      <span class="absolute inline-flex h-6 w-6 rounded-full opacity-60 animate-ping" style="background-color:#3b82f6"></span>
+      <span class="absolute inline-flex h-4 w-4 rounded-full opacity-90" style="background-color:#3b82f6"></span>
+      <div class="relative h-3 w-3 rounded-full bg-white border-2 border-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.9)]"></div>
+    `;
 
-      userMarkerRef.current = new maplibregl.Marker({ element: el, anchor: 'center' })
-        .setLngLat([lng, lat])
-        .addTo(map);
-    }
-  }, [map, userLocation]);
+    userMarkerRef.current = new maplibregl.Marker({ element: el, anchor: 'center' })
+      .setLngLat([lng, lat]) 
+      .addTo(map);
+  }
+}, [map, userLocation]);
 
   // 5. Fly to GPS position on activation
   useEffect(() => {
