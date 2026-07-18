@@ -44,7 +44,13 @@ export const MobileNavBar: React.FC<MobileNavBarProps> = ({
                     <button
                         onClick={onSosClick}
                         aria-label="Emergency SOS"
-                        className="group w-[92px] h-[92px] rounded-full bg-gradient-to-b from-red-500 to-red-700 border-8 border-zinc-900 shadow-[0_0_40px_rgba(239,68,68,0.45)] flex items-center justify-center text-white transition-all duration-300 hover:scale-105 active:scale-95 active:shadow-[0_0_20px_rgba(239,68,68,0.6)]"
+                          className="group w-[92px] h-[92px] rounded-full 
+                            bg-gradient-to-b from-[var(--color-red)] to-[var(--color-red)] 
+                            border-8 border-zinc-900 
+                            shadow-[0_0_50px_var(--color-red)] 
+                            flex items-center justify-center text-white 
+                            transition-all duration-300 hover:scale-105 active:scale-95 
+                            active:shadow-[0_0_10px_var(--color-red)]"
                     >
                         <span className="font-bold text-2xl tracking-wide group-hover:animate-pulse">SOS</span>
                     </button>
@@ -95,7 +101,7 @@ const NavItemComponent: React.FC<NavItemComponentProps> = ({ item, isActive, onC
         <button    
             onClick={onClick}
             className={`flex flex-col items-center justify-center w-16 h-full gap-1 transition-colors duration-300 group outline-none ${
-                isActive ? 'text-blue-500' : 'text-zinc-500 hover:text-zinc-300'
+                isActive ? 'text-[var(--theme-blue)]' : 'text-zinc-500 hover:text-zinc-300'
             }`}
             aria-current={isActive ? 'page' : undefined}
         >
