@@ -21,7 +21,7 @@ export const LGUDetailCard: React.FC<LGUDetailCardProps> = ({ lgu, onBack }) => 
       <div className="flex justify-between items-center border-b border-slate-800 pb-3">
         <button
           onClick={onBack}
-          className="flex items-center gap-1.5 text-slate-400 hover:text-cyan-400 text-[10px] font-mono font-bold tracking-wider uppercase transition-colors cursor-pointer"
+          className="flex items-center gap-1.5 text-slate-400 hover:text-[var(--theme-accent)] text-[10px] font-mono font-bold tracking-wider uppercase transition-colors cursor-pointer"
         >
           <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="M15 18l-6-6 6-6" />
@@ -40,8 +40,8 @@ export const LGUDetailCard: React.FC<LGUDetailCardProps> = ({ lgu, onBack }) => 
       </div>
 
       {/* Contact Details Box */}
-      <div className="bg-slate-950/80 p-4 rounded-lg border border-cyan-500/30 flex flex-col gap-3">
-        <span className="text-xs font-bold text-cyan-400 tracking-wider flex items-center gap-1">
+      <div className="bg-slate-950/80 p-4 rounded-lg border border-[var(--theme-border-accent)] flex flex-col gap-3">
+        <span className="text-xs font-bold text-[var(--theme-accent)] tracking-wider flex items-center gap-1">
           ✦ CONTACT DETAILS
         </span>
 
@@ -56,7 +56,7 @@ export const LGUDetailCard: React.FC<LGUDetailCardProps> = ({ lgu, onBack }) => 
           <div className="flex items-start gap-2">
             <span className="text-slate-500 shrink-0 w-16">PHONE:</span>
             {lgu.phone ? (
-              <a href={`tel:${lgu.phone}`} className="text-cyan-300 hover:text-cyan-200 underline underline-offset-2">
+              <a href={`tel:${lgu.phone}`} className="text-[var(--theme-accent-hover)] hover:text-[var(--theme-accent)] underline underline-offset-2">
                 {lgu.phone}
               </a>
             ) : (
@@ -71,7 +71,7 @@ export const LGUDetailCard: React.FC<LGUDetailCardProps> = ({ lgu, onBack }) => 
                 href={lgu.website.startsWith('http') ? lgu.website : `https://${lgu.website}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-cyan-300 hover:text-cyan-200 underline underline-offset-2 break-all"
+                className="text-[var(--theme-accent-hover)] hover:text-[var(--theme-accent)] underline underline-offset-2 break-all"
               >
                 {lgu.website}
               </a>

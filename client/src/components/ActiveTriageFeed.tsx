@@ -43,7 +43,7 @@ export const ActiveTriageFeed: React.FC<ActiveTriageFeedProps> = ({
   );
 
   return (
-    <div className={`bg-slate-900/90 border border-slate-800 rounded-xl p-4 flex flex-col gap-3 h-full ${className}`}>
+    <div className={`bg-[var(--theme-surface)]/90 border border-[var(--theme-border)] rounded-xl p-4 flex flex-col gap-3 h-full ${className}`}>
       <div className="border-b border-slate-800 pb-2">
         <h2 className="text-xs font-mono font-bold text-slate-400 tracking-wider">
           ACTIVE TRIAGE FEED ({filteredTickets.length})
@@ -56,7 +56,7 @@ export const ActiveTriageFeed: React.FC<ActiveTriageFeedProps> = ({
               onClick={() => setUrgencyFilter(value)}
               className={`px-2 py-0.5 rounded-md font-mono text-[9px] font-bold tracking-wider uppercase transition-all duration-200 cursor-pointer ${
                 urgencyFilter === value
-                  ? 'bg-cyan-500/15 text-cyan-400 border border-cyan-500/40'
+                  ? 'bg-[var(--theme-accent-subtle)] text-[var(--theme-accent)] border border-[var(--theme-border-accent)]'
                   : 'text-slate-500 hover:text-slate-300 border border-transparent hover:border-slate-700'
               }`}
             >
@@ -67,7 +67,7 @@ export const ActiveTriageFeed: React.FC<ActiveTriageFeedProps> = ({
       </div>
 
       
-      <div className={`flex flex-col gap-2 pr-1 ${embedded ? '' : 'overflow-y-auto max-h-[500px] scrollbar-thin scrollbar-track-slate-950 scrollbar-thumb-slate-800 hover:scrollbar-thumb-cyan-500/50'}`}>
+      <div className={`flex flex-col gap-2 pr-1 ${embedded ? '' : 'overflow-y-auto max-h-[500px] scrollbar-thin scrollbar-track-slate-950 scrollbar-thumb-slate-800 hover:scrollbar-thumb-[var(--theme-accent)]/50'}`}>
         {filteredTickets.length === 0 && (
           <p className="text-[11px] text-slate-500 font-mono text-center py-4">No incidents match this filter.</p>
         )}
@@ -98,7 +98,7 @@ export const ActiveTriageFeed: React.FC<ActiveTriageFeedProps> = ({
               onClick={() => onSelectTicket(t)}
               className={`p-3 rounded-lg border border-slate-800 border-l-4 cursor-pointer transition-all duration-200 ${urgencyColor} ${
                 isSelected
-                  ? 'bg-slate-800/90 border-cyan-500/50 shadow-[0_0_10px_rgba(0,240,255,0.1)]'
+                  ? 'bg-slate-800/90 border-[var(--theme-accent)]/50 shadow-[0_0_10px_var(--theme-accent-glow)]'
                   : 'bg-slate-950/40 hover:bg-slate-800/50'
               }`}
             >

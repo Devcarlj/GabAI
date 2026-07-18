@@ -1,4 +1,3 @@
-// src/types.ts
 // src/types/ticket.ts
 
 export type UrgencyLevel = 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
@@ -9,53 +8,13 @@ export interface AIAnalysis {
   location: string;
   summary: string;
   incidentType?: IncidentType;
+  recommendedActions?: string[]; // NEW: safety steps for citizens while help is en route
 }
 
-export interface Ticket {
-  _id?: string;
-  ticketId: string;
-  rawText: string;
-  photoUrl?: string;
-  coordinates?: { lat: number; lng: number };
-  coordinatesSource?: 'gps' | 'geocoded' | 'none';
-  locationLabel?: string;
-  aiAnalysis: AIAnalysis;
-  dispatchOrder: string;
-  createdAt: string;
-}
-
-export interface CreateTicketPayload {
-  rawText: string;
-  photoUrl?: string;
-  incidentType?: IncidentType;
-  coordinates?: { lat: number; lng: number };
-  locationLabel?: string;
-}
-
-export interface NearbyLGU {
-  name: string;
+export interface TicketCoordinates {
   lat: number;
   lng: number;
-  distanceKm: number;
 }
-
-export type NearbyLGUStatus = 'idle' | 'pending' | 'ready' | 'failed';
-
-export interface Ticket {
-  _id?: string;
-  ticketId: string;
-  rawText: string;
-  photoUrl?: string;
-  coordinates?: { lat: number; lng: number };
-  coordinatesSource?: 'gps' | 'geocoded' | 'none';
-  locationLabel?: string;
-  aiAnalysis: AIAnalysis;
-  dispatchOrder: string;
-  createdAt: string;
-  nearbyLGUs?: NearbyLGU[];          // ← add
-  nearbyLGUsStatus?: NearbyLGUStatus; // ← add
-}
-
 
 export interface NearbyLGU {
   name: string;
@@ -66,4 +25,29 @@ export interface NearbyLGU {
   phone?: string;
   website?: string;
   openingHours?: string;
+}
+
+export type NearbyLGUStatus = 'idle' | 'pending' | 'ready' | 'failed';
+
+export interface Ticket {
+  _id?: string;
+  ticketId: string;
+  rawText: string;
+  photoUrl?: string;
+  coordinates?: TicketCoordinates;
+  coordinatesSource?: 'gps' | 'geocoded' | 'none';
+  locationLabel?: string;
+  aiAnalysis: AIAnalysis;
+  dispatchOrder: string;
+  createdAt: string;
+  nearbyLGUs?: NearbyLGU[];
+  nearbyLGUsStatus?: NearbyLGUStatus;
+}
+
+export interface CreateTicketPayload {
+  rawText: string;
+  photoUrl?: string;
+  incidentType?: IncidentType;
+  coordinates?: TicketCoordinates;
+  locationLabel?: string;
 }

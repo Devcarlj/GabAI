@@ -33,6 +33,7 @@ GabAI
 │  │  │  └─ vite.svg
 │  │  ├─ components
 │  │  │  ├─ ActiveTriageFeed.tsx
+│  │  │  ├─ GpsPermissionModal.tsx
 │  │  │  ├─ IncidentDetailCard.tsx
 │  │  │  ├─ KPIMetricsGrid.tsx
 │  │  │  ├─ Layouts
@@ -61,7 +62,8 @@ GabAI
 │  │  │  │  ├─ ResetPassword.tsx
 │  │  │  │  ├─ VerifyEmail.tsx
 │  │  │  │  └─ VerifyOtp.tsx
-│  │  │  └─ Home.tsx
+│  │  │  ├─ Home.tsx
+│  │  │  └─ Profile.tsx
 │  │  └─ types
 │  │     └─ ticket.ts
 │  ├─ tailwind.config.js

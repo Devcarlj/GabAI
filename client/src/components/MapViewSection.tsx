@@ -398,8 +398,11 @@ useEffect(() => {
       {/* Top Right: Zoom Out Philippines Button */}
       <button
         onClick={handleZoomToPhilippines}
-        className="absolute top-5 right-3 z-10 flex items-center gap-1.5 bg-[#070b12]/90 hover:bg-slate-900 border border-slate-800 hover:border-cyan-500/50 px-2.5 py-1.5 rounded-md text-[10px] text-slate-300 hover:text-cyan-400 font-mono backdrop-blur-md transition-all cursor-pointer shadow-lg group"
-        title="Reset View to Philippines"
+      className="absolute top-5 right-3 z-10 flex items-center gap-1.5 
+      bg-[#070b12]/90 hover:bg-slate-900 border border-slate-800 
+      hover:border-red-500 px-2.5 py-1.5 rounded-md text-[10px] text-slate-300 
+      hover:text-red-400 font-mono backdrop-blur-md transition-all cursor-pointer shadow-lg group"
+              title="Reset View to Philippines"
       >
         <svg 
           xmlns="http://www.w3.org/2000/svg" 
@@ -411,7 +414,7 @@ useEffect(() => {
           strokeWidth="2" 
           strokeLinecap="round" 
           strokeLinejoin="round"
-          className="text-cyan-400 group-hover:scale-110 transition-transform"
+          className= "[var(--theme-accent)]"
         >
           <circle cx="12" cy="12" r="10"/>
           <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/>

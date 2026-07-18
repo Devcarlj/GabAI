@@ -40,14 +40,14 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({
       {/* Directive Header */}
       <div className="flex flex-col gap-3">
         <div className="flex items-center gap-1.5 border-b border-slate-900/50 pb-2">
-          <AlertTriangle className="w-4 h-4 text-cyan-400" />
+          <AlertTriangle className="w-4 h-4 text-[var(--theme-accent)]" />
           <span className="text-[10px] font-bold tracking-wider text-slate-400 uppercase font-mono">
             SuriAI Live Triage Submission
           </span>
         </div>
 
         <div className="p-3 bg-slate-950/40 rounded-xl border border-slate-900 text-[10px] text-slate-400 leading-relaxed font-mono">
-          <span className="text-cyan-400 font-bold block mb-1">⚡ OPERATOR SYSTEM DIRECTIVE:</span>
+          <span className="text-[var(--theme-accent)] font-bold block mb-1">⚡ OPERATOR SYSTEM DIRECTIVE:</span>
           Insert citizen reports directly. Triage parses Taglish/English and triggers emergency response.
         </div>
       </div>
@@ -59,7 +59,7 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({
           {/* Location Toggle Bar */}
           <div className="flex items-center justify-between bg-slate-950/60 p-2.5 rounded-xl border border-slate-900 mb-2">
             <div className="flex items-center gap-2">
-              <svg className={`w-4 h-4 ${isGpsActive ? 'text-cyan-400' : 'text-slate-500'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className={`w-4 h-4 ${isGpsActive ? 'text-[var(--theme-accent)]' : 'text-slate-500'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>
@@ -68,7 +68,7 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({
                   {gpsLoading ? 'Acquiring GPS...' : isGpsActive ? 'GPS Position Locked' : 'Attach Live Location'}
                 </span>
                 {isGpsActive && userLocation && (
-                  <span className="text-[9px] text-cyan-400/80 font-mono truncate max-w-[180px]">
+                  <span className="text-[9px] text-[var(--theme-accent)]/80 font-mono truncate max-w-[180px]">
                     {locationLabel || `${userLocation.lat.toFixed(5)}, ${userLocation.lng.toFixed(5)}`}
                   </span>
                 )}
@@ -78,7 +78,7 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({
               type="button"
               onClick={onToggleGps}
               className={`w-8 h-4 flex items-center rounded-full p-0.5 transition-colors cursor-pointer ${
-                isGpsActive ? 'bg-cyan-500 justify-end' : 'bg-slate-800 justify-start'
+                isGpsActive ? 'bg-[var(--theme-accent)] justify-end' : 'bg-slate-800 justify-start'
               }`}
             >
               <div className="bg-slate-950 w-3 h-3 rounded-full shadow-md transition-transform" />
@@ -92,7 +92,7 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({
               onClick={() => setIncidentType('WARNING')}
               className={`flex items-center justify-center gap-2 py-1.5 px-2 rounded-xl border text-[10px] font-mono transition-all cursor-pointer ${
                 incidentType === 'WARNING'
-                  ? 'bg-cyan-500/10 border-cyan-500/50 text-cyan-400 shadow-[0_0_10px_rgba(6,182,212,0.15)]'
+                  ? 'bg-[var(--theme-accent-subtle)] border-[var(--theme-accent)]/50 text-[var(--theme-accent)] shadow-[0_0_10px_var(--theme-accent-glow)]'
                   : 'bg-slate-950 border-slate-900 text-slate-500 hover:text-slate-300 hover:border-slate-800'
               }`}
             >
@@ -118,7 +118,7 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
             placeholder="Describe the emergency or incident details (Tagalog, English, Taglish)..."
-            className="w-full flex-1 bg-slate-950 border border-slate-900 rounded-xl p-3 text-xs text-slate-300 placeholder:text-slate-600 focus:outline-none focus:border-cyan-500/50 resize-none leading-relaxed min-h-[120px]"
+            className="w-full flex-1 bg-slate-950 border border-slate-900 rounded-xl p-3 text-xs text-slate-300 placeholder:text-slate-600 focus:outline-none focus:border-[var(--theme-accent)]/50 resize-none leading-relaxed min-h-[120px]"
           />
         </div>
 
@@ -135,9 +135,9 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({
           {!photo ? (
             <label
               htmlFor="triage-photo-upload"
-              className="border border-dashed border-slate-800 hover:border-cyan-500/50 rounded-xl py-2.5 flex flex-col items-center justify-center gap-1 cursor-pointer transition-all duration-200 bg-slate-950/20 hover:bg-slate-950/50 group"
+              className="border border-dashed border-slate-800 hover:border-[var(--theme-accent)]/50 rounded-xl py-2.5 flex flex-col items-center justify-center gap-1 cursor-pointer transition-all duration-200 bg-slate-950/20 hover:bg-slate-950/50 group"
             >
-              <svg className="w-5 h-5 text-slate-500 group-hover:text-cyan-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-5 h-5 text-slate-500 group-hover:text-[var(--theme-accent)] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
               <span className="text-[10px] text-slate-500 group-hover:text-slate-300 font-semibold transition-colors">
@@ -173,7 +173,7 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({
         <button
           type="submit"
           disabled={loading || !inputText.trim()}
-          className="w-full bg-cyan-500 hover:bg-cyan-400 disabled:bg-slate-900/50 text-slate-950 disabled:text-slate-600 font-bold py-2.5 rounded-xl text-xs transition-colors shrink-0 disabled:opacity-40 font-mono shadow-[0_0_15px_rgba(6,182,212,0.15)] hover:shadow-[0_0_20px_rgba(6,182,212,0.3)] disabled:shadow-none cursor-pointer"
+          className="w-full bg-[var(--theme-accent)] hover:bg-[var(--theme-accent-hover)] disabled:bg-slate-900/50 text-[var(--theme-btn-text)] disabled:text-slate-600 font-bold py-2.5 rounded-xl text-xs transition-colors shrink-0 disabled:opacity-40 font-mono shadow-[0_0_15px_var(--theme-accent-glow)] hover:shadow-[0_0_20px_rgba(255,60,49,0.3)] disabled:shadow-none cursor-pointer"
         >
           {loading ? 'ANALYZING INCIDENT...' : 'SUBMIT REPORT'}
         </button>

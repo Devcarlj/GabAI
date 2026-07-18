@@ -27,8 +27,9 @@ const TicketSchema: Schema = new Schema({
     location: { type: String, required: true },
     summary: { type: String, required: true },
     incidentType: { type: String, enum: ['WARNING', 'CONSTRUCTION'], default: 'WARNING' },
-
+    recommendedActions: { type: [String], default: [] }, 
   },
+  
   dispatchOrder: { type: String, required: true },
   createdAt: { type: String, default: () => new Date().toISOString() },
 

@@ -19,8 +19,8 @@ import { MobileNavBar } from '../components/MobileNavBar';
 
 const MetricCards: React.FC<{ tickets: Ticket[]; compact?: boolean }> = ({ tickets, compact }) => {
   const cardClass = compact
-    ? 'mobile-metric-card bg-[#090f1a] border border-slate-900 flex flex-col justify-between'
-    : 'bg-[#090f1a] border border-slate-900 rounded-xl p-2.5 flex flex-col justify-between';
+    ? 'mobile-metric-card bg-[var(--theme-surface)] border border-slate-900 flex flex-col justify-between'
+    : 'bg-[var(--theme-surface)] border border-slate-900 rounded-xl p-2.5 flex flex-col justify-between';
 
   const labelClass = compact
     ? 'text-[7px] font-bold tracking-wider text-slate-500 uppercase'
@@ -34,7 +34,7 @@ const MetricCards: React.FC<{ tickets: Ticket[]; compact?: boolean }> = ({ ticke
     <>
       <div className={cardClass}>
         <span className={labelClass}>Active Tickets</span>
-        <span className={`${valueClass} text-cyan-400`}>{tickets.length || 14}</span>
+        <span className={`${valueClass} text-[var(--theme-accent)]`}>{tickets.length || 14}</span>
       </div>
 
       <div className={cardClass}>
@@ -60,9 +60,9 @@ const MetricCards: React.FC<{ tickets: Ticket[]; compact?: boolean }> = ({ ticke
           <span className={`${valueClass} text-slate-200`}>1.8s</span>
           {!compact && (
             <div className="flex items-end gap-0.5 h-4">
-              <div className="w-0.5 bg-cyan-950 h-2"></div>
-              <div className="w-0.5 bg-cyan-900 h-3"></div>
-              <div className="w-0.5 bg-cyan-500 h-4"></div>
+              <div className="w-0.5 bg-[var(--theme-accent-muted)] h-2"></div>
+              <div className="w-0.5 bg-[var(--theme-accent-subtle)] h-3"></div>
+              <div className="w-0.5 bg-[var(--theme-accent)] h-4"></div>
             </div>
           )}
         </div>
@@ -72,7 +72,7 @@ const MetricCards: React.FC<{ tickets: Ticket[]; compact?: boolean }> = ({ ticke
         <span className={labelClass}>Past Trend Matrix</span>
         <div className={`relative ${compact ? 'h-3' : 'h-5'} w-full mt-0.5`}>
           <svg className="w-full h-full" viewBox="0 0 100 30" preserveAspectRatio="none">
-            <path d="M0,25 Q15,5 30,20 T60,10 T90,22 T100,15" fill="none" stroke="#06b6d4" strokeWidth="1.5" />
+            <path d="M0,25 Q15,5 30,20 T60,10 T90,22 T100,15" fill="none" stroke="var(--theme-accent)" strokeWidth="1.5" />
           </svg>
         </div>
       </div>
@@ -83,9 +83,9 @@ const MetricCards: React.FC<{ tickets: Ticket[]; compact?: boolean }> = ({ ticke
           <span className={`${valueClass} text-slate-200`}>3</span>
           {!compact && (
             <div className="flex items-end gap-0.5 h-4">
-              <div className="w-0.5 bg-cyan-900 h-1"></div>
-              <div className="w-0.5 bg-cyan-500 h-3"></div>
-              <div className="w-0.5 bg-cyan-400 h-4"></div>
+              <div className="w-0.5 bg-[var(--theme-accent-subtle)] h-1"></div>
+              <div className="w-0.5 bg-[var(--theme-accent)] h-3"></div>
+              <div className="w-0.5 bg-[var(--theme-accent-hover)] h-4"></div>
             </div>
           )}
         </div>
@@ -107,7 +107,7 @@ const SidebarNavLinks: React.FC<{ onNavigate?: () => void }> = ({ onNavigate }) 
     <Link
       to="/"
       onClick={onNavigate}
-      className="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-cyan-950/40 text-cyan-400 border border-cyan-500/20"
+      className="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-[var(--theme-accent-subtle)] text-[var(--theme-accent)] border border-[var(--theme-accent)]/20"
     >
       <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.707.707a1 1 0 001.414-1.414l-7-7z" /></svg>
       <span className="text-xs font-semibold tracking-wide">Home</span>
@@ -435,16 +435,16 @@ const handleCloseMobileDetail = () => {
 
 
   return (
-    <div className="flex min-h-screen lg:h-screen bg-[#070b12] text-slate-100 font-sans antialiased overflow-x-hidden lg:overflow-hidden select-none">
+    <div className="flex min-h-screen lg:h-screen bg-[var(--theme-bg)] text-slate-100 font-sans antialiased overflow-x-hidden lg:overflow-hidden select-none">
 
       {/* 1. LEFT SIDEBAR — desktop only */}
-      <aside className="hidden lg:flex w-16 border-r border-slate-900 bg-[#090f1a] flex-col items-center py-4 justify-between shrink-0">
+      <aside className="hidden lg:flex w-16 border-r border-slate-900 bg-[var(--theme-surface)] flex-col items-center py-4 justify-between shrink-0">
         <div className="flex flex-col items-center gap-5 w-full">
           <div className="p-2 text-slate-500 hover:text-slate-300 cursor-pointer">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>
           </div>
 
-          <Link to="/" className="p-2.5 bg-cyan-950/40 text-cyan-400 border-l-2 border-cyan-400 w-full flex justify-center cursor-pointer">
+          <Link to="/" className="p-2.5 bg-[var(--theme-accent-subtle)] text-[var(--theme-accent)] border-l-2 border-[var(--theme-accent)] w-full flex justify-center cursor-pointer">
             <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.707.707a1 1 0 001.414-1.414l-7-7z" /></svg>
           </Link>
 
@@ -486,7 +486,7 @@ const handleCloseMobileDetail = () => {
           <div className={`${isRightPanelOpen ? 'lg:col-span-2' : 'lg:col-span-3'} flex flex-col gap-0 lg:gap-4 lg:overflow-hidden lg:h-full min-h-0 transition-all duration-300`}>
 
             {/* GIS MAP CONTAINER */}
-            <div className="h-[42vh] min-h-60 lg:flex-1 lg:h-full relative bg-[#09101d] rounded-none lg:rounded-2xl border-0 lg:border border-slate-900 overflow-hidden shrink-0 lg:shrink lg:min-h-0">
+            <div className="h-[42vh] min-h-60 lg:flex-1 lg:h-full relative bg-[var(--theme-surface-elevated)] rounded-none lg:rounded-2xl border-0 lg:border border-slate-900 overflow-hidden shrink-0 lg:shrink lg:min-h-0">
               <MapViewSection
                 tickets={tickets}
                 selectedTicket={selectedTicket}
@@ -522,7 +522,7 @@ const handleCloseMobileDetail = () => {
 
           {/* COLUMN 3: RIGHT SIDEBAR — desktop only */}
           {isRightPanelOpen ? (
-            <div className="hidden lg:flex lg:col-span-1 flex-col overflow-hidden h-full min-h-0 bg-[#090f1a] rounded-2xl border border-slate-900 shadow-xl transition-all duration-300">
+            <div className="hidden lg:flex lg:col-span-1 flex-col overflow-hidden h-full min-h-0 bg-[var(--theme-surface)] rounded-2xl border border-slate-900 shadow-xl transition-all duration-300">
 
               <div className="flex items-center justify-between border-b border-slate-900 p-3 bg-slate-950/20 shrink-0">
                 <div className="flex gap-1">
@@ -530,7 +530,7 @@ const handleCloseMobileDetail = () => {
                     onClick={() => setActiveRightPanel('submission')}
                     className={`px-3 py-1.5 rounded-lg font-mono text-[10px] font-bold tracking-wider uppercase transition-all duration-200 cursor-pointer ${
                       activeRightPanel === 'submission'
-                        ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/30'
+                        ? 'bg-[var(--theme-accent-subtle)] text-[var(--theme-accent)] border border-[var(--theme-border-accent)]'
                         : 'text-slate-400 hover:text-slate-200 border border-transparent'
                     }`}
                   >
@@ -541,7 +541,7 @@ const handleCloseMobileDetail = () => {
                     disabled={!selectedTicket}
                     className={`px-3 py-1.5 rounded-lg font-mono text-[10px] font-bold tracking-wider uppercase transition-all duration-200 cursor-pointer ${
                       activeRightPanel === 'detail'
-                        ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/30'
+                        ? 'bg-[var(--theme-accent-subtle)] text-[var(--theme-accent)] border border-[var(--theme-border-accent)]'
                         : 'text-slate-500 hover:text-slate-350 border border-transparent disabled:opacity-30 disabled:cursor-not-allowed'
                     }`}
                   >
@@ -597,7 +597,7 @@ const handleCloseMobileDetail = () => {
           ) : (
             <button
               onClick={() => setIsRightPanelOpen(true)}
-              className="hidden lg:flex absolute right-4 top-4 z-20 bg-[#090f1a]/95 hover:bg-slate-900 border border-slate-800 text-cyan-400 p-2.5 rounded-xl shadow-2xl hover:text-cyan-300 transition-all duration-200 cursor-pointer items-center gap-1.5 group font-mono text-[10px] font-bold tracking-wider"
+              className="hidden lg:flex absolute right-4 top-4 z-20 bg-[var(--theme-surface)]/95 hover:bg-slate-900 border border-slate-800 text-[var(--theme-accent)] p-2.5 rounded-xl shadow-2xl hover:text-[var(--theme-accent-hover)] transition-all duration-200 cursor-pointer items-center gap-1.5 group font-mono text-[10px] font-bold tracking-wider"
               title="Open Triage Panel"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
