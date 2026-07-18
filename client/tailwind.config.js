@@ -5,13 +5,16 @@ export default {
   theme: {
     extend: {
       colors: {
-        brand: {
-          dark: '#09090B',       // Base background canvas (Zinc 950)
-          surface: '#18181B',    // Card/Input fields background (Zinc 900)
-          border: '#27272A',     // High-contrast clean panel borders (Zinc 800)
-          muted: '#A1A1AA',      // Secondary readable paragraphs (Zinc 400)
-          teal: '#D0FD1B',       // Your custom signature electric neon teal highlight
-        }
+        primary: 'var(--color-red)',
+        secondary: 'var(--color-gray)',
+        background: 'var(--color-white)',
+        foreground: 'var(--color-black)',
+        muted: 'var(--color-gray)',
+        accent: 'var(--color-gray)',
+        destructive: 'var(--color-red)',
+        border: 'var(--color-gray)',
+        input: 'var(--color-white)',
+        ring: 'var(--color-gray)'
       }
     },
   },

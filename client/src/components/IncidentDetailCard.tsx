@@ -17,13 +17,13 @@ export const IncidentDetailCard: React.FC<IncidentDetailCardProps> = ({
 }) => {
   if (!ticket) {
     return (
-      <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-6 text-slate-400 flex items-center justify-center h-full">
+      <div className="bg-[var(--theme-surface)]/90 border border-[var(--theme-border)] rounded-xl p-6 text-slate-400 flex items-center justify-center h-full">
         Select a report from the feed to view triage details.
       </div>
     );
   }
 
-  const { urgency, location, summary } = ticket.aiAnalysis;
+  const { urgency, location, summary, recommendedActions } = ticket.aiAnalysis;
 
   const urgencyColor =
     urgency === 'CRITICAL'
@@ -58,10 +58,10 @@ export const IncidentDetailCard: React.FC<IncidentDetailCardProps> = ({
     : 'Show Near LGUs';
 
   return (
-    <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-5 shadow-xl flex flex-col gap-4 text-slate-100">
+    <div className="bg-[var(--theme-surface)]/90 border border-[var(--theme-border)] rounded-xl p-5 shadow-xl flex flex-col gap-4 text-slate-100">
       {/* Header */}
       <div className="flex justify-between items-center border-b border-slate-800 pb-3">
-        <span className="font-mono text-cyan-400 font-bold text-sm tracking-wide">
+        <span className="font-mono text-[var(--theme-accent)] font-bold text-sm tracking-wide">
           INCIDENT ID: {ticket.ticketId}
         </span>
         <span className={`px-2.5 py-0.5 text-xs font-bold border rounded-md ${urgencyColor}`}>
@@ -90,8 +90,8 @@ export const IncidentDetailCard: React.FC<IncidentDetailCardProps> = ({
       )}
 
       {/* AI Structured Analysis Box */}
-      <div className="bg-slate-950/80 p-4 rounded-lg border border-cyan-500/30 flex flex-col gap-2">
-        <span className="text-xs font-bold text-cyan-400 tracking-wider flex items-center gap-1">
+      <div className="bg-slate-950/80 p-4 rounded-lg border border-[var(--theme-border-accent)] flex flex-col gap-2">
+        <span className="text-xs font-bold text-[var(--theme-accent)] tracking-wider flex items-center gap-1">
           ✦ AI STRUCTURED ANALYSIS
         </span>
         <div className="text-xs space-y-1 mt-1 font-mono">
@@ -100,7 +100,7 @@ export const IncidentDetailCard: React.FC<IncidentDetailCardProps> = ({
           <div className="flex flex-col gap-1.5">
             <p>
               <span className="text-slate-400">LOCATION:</span>{' '}
-              <span className="text-cyan-300">{location}</span>
+              <span className="text-[var(--theme-accent-hover)]">{location}</span>
               {ticket.coordinates && (
                 <span
                   className="ml-1.5 inline-flex items-center gap-0.5 text-[9px] text-blue-400 align-middle"
@@ -139,9 +139,26 @@ export const IncidentDetailCard: React.FC<IncidentDetailCardProps> = ({
         </div>
       </div>
 
+      {/* AI Suggested Actions Box */}
+      {recommendedActions && recommendedActions.length > 0 && (
+        <div className="bg-slate-950/80 p-4 rounded-lg border border-emerald-500/30 flex flex-col gap-2">
+          <span className="text-xs font-bold text-emerald-400 tracking-wider flex items-center gap-1">
+            ✓ SUGGESTED ACTIONS
+          </span>
+          <ul className="text-xs text-slate-200 space-y-1.5 mt-1">
+            {recommendedActions.map((action, i) => (
+              <li key={i} className="flex items-start gap-2">
+                <span className="text-emerald-400 mt-0.5">•</span>
+                <span>{action}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
       {/* AI Dispatch Order Box */}
-      <div className="bg-slate-950 p-4 rounded-lg border border-cyan-400/60 shadow-[0_0_15px_rgba(0,240,255,0.15)]">
-        <span className="text-xs font-bold text-cyan-300 tracking-wider block mb-1">
+      <div className="bg-slate-950 p-4 rounded-lg border border-[var(--theme-accent)]/60 shadow-[0_0_15px_var(--theme-accent-glow)]">
+        <span className="text-xs font-bold text-[var(--theme-accent-hover)] tracking-wider block mb-1">
           ⚡ AI DISPATCH ORDER
         </span>
         <p className="text-xs text-slate-100 font-medium leading-relaxed">

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import axiosInstance from '../../api/axiosInstance';
 import { KeyRound, ArrowLeft, Loader2, AlertCircle } from 'lucide-react';
+import type { AxiosError } from 'axios';
 
 export const VerifyOtp: React.FC = () => {
   const navigate = useNavigate();
@@ -74,7 +75,7 @@ export const VerifyOtp: React.FC = () => {
       }
     } catch (err: unknown) {
       if (err && typeof err === 'object' && 'isAxiosError' in err) {
-        const axiosErr = err as any;
+        const axiosErr = err as AxiosError<{ message?: string }>;
         setError(axiosErr.response?.data?.message || 'Verification failed.');
       } else if (err instanceof Error) {
         setError(err.message);
@@ -89,7 +90,7 @@ export const VerifyOtp: React.FC = () => {
   if (!email) return null;
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4" style={{ backgroundColor: '#09090B' }}>
+    <div className="min-h-screen flex items-center justify-center p-4" style={{ backgroundColor: 'var(--theme-bg)' }}>
       {/* Background glow */}
       <div
         className="absolute pointer-events-none"
@@ -99,7 +100,7 @@ export const VerifyOtp: React.FC = () => {
           transform: 'translateX(-50%)',
           width: '500px',
           height: '500px',
-          background: 'radial-gradient(circle, rgba(208,253,27,0.06) 0%, transparent 70%)',
+          background: 'radial-gradient(circle, rgba(255,60,49,0.06) 0%, transparent 70%)',
           borderRadius: '50%',
         }}
       />
@@ -108,8 +109,8 @@ export const VerifyOtp: React.FC = () => {
         className="w-full relative"
         style={{
           maxWidth: '420px',
-          backgroundColor: '#18181B',
-          border: '1px solid #27272A',
+          backgroundColor: 'var(--theme-surface)',
+          border: '1px solid var(--theme-border)',
           borderRadius: '16px',
           padding: '40px 32px',
           boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)',
@@ -121,8 +122,8 @@ export const VerifyOtp: React.FC = () => {
             style={{
               width: '48px',
               height: '48px',
-              backgroundColor: '#09090B',
-              border: '1px solid #27272A',
+              backgroundColor: 'var(--theme-bg)',
+              border: '1px solid var(--theme-border)',
               borderRadius: '12px',
               display: 'inline-flex',
               alignItems: 'center',
@@ -130,13 +131,13 @@ export const VerifyOtp: React.FC = () => {
               marginBottom: '16px',
             }}
           >
-            <KeyRound style={{ width: '24px', height: '24px', color: '#D0FD1B' }} />
+            <KeyRound style={{ width: '24px', height: '24px', color: 'var(--theme-accent)' }} />
           </div>
           <h1
             style={{
               fontSize: '20px',
               fontWeight: 700,
-              color: '#FFFFFF',
+              color: 'var(--theme-text)',
               letterSpacing: '1px',
               textTransform: 'uppercase' as const,
               margin: '0 0 4px 0',
@@ -144,8 +145,8 @@ export const VerifyOtp: React.FC = () => {
           >
             Verify OTP
           </h1>
-          <p style={{ fontSize: '13px', color: '#A1A1AA', margin: 0 }}>
-            Enter the 6-digit code sent to <span style={{ color: '#D0FD1B' }}>{email}</span>
+          <p style={{ fontSize: '13px', color: 'var(--theme-text-muted)', margin: 0 }}>
+            Enter the 6-digit code sent to <span style={{ color: 'var(--theme-accent)' }}>{email}</span>
           </p>
         </div>
 
@@ -195,15 +196,15 @@ export const VerifyOtp: React.FC = () => {
                   textAlign: 'center',
                   fontSize: '22px',
                   fontWeight: 700,
-                  backgroundColor: '#09090B',
-                  border: `2px solid ${digit ? '#D0FD1B' : '#3F3F46'}`,
-                  color: '#FFFFFF',
+                  backgroundColor: 'var(--theme-bg)',
+                  border: `2px solid ${digit ? 'var(--theme-accent)' : 'var(--theme-input-border)'}`,
+                  color: 'var(--theme-text)',
                   borderRadius: '10px',
                   outline: 'none',
                   transition: 'border-color 0.2s',
                 }}
-                onFocus={(e) => (e.target.style.borderColor = '#D0FD1B')}
-                onBlur={(e) => { if (!digit) e.target.style.borderColor = '#3F3F46'; }}
+                onFocus={(e) => (e.target.style.borderColor = 'var(--theme-accent)')}
+                onBlur={(e) => { if (!digit) e.target.style.borderColor = 'var(--theme-input-border)'; }}
               />
             ))}
           </div>
@@ -214,8 +215,8 @@ export const VerifyOtp: React.FC = () => {
             disabled={isLoading || !isComplete}
             style={{
               width: '100%',
-              backgroundColor: isLoading || !isComplete ? '#A1A1AA' : '#FFFFFF',
-              color: '#09090B',
+              backgroundColor: isLoading || !isComplete ? 'var(--theme-text-muted)' : 'var(--theme-text)',
+              color: 'var(--theme-bg)',
               fontWeight: 700,
               fontSize: '14px',
               padding: '14px',
@@ -229,8 +230,8 @@ export const VerifyOtp: React.FC = () => {
               transition: 'background-color 0.2s',
               opacity: isLoading || !isComplete ? 0.6 : 1,
             }}
-            onMouseEnter={(e) => { if (!isLoading && isComplete) e.currentTarget.style.backgroundColor = '#D0FD1B'; }}
-            onMouseLeave={(e) => { if (!isLoading && isComplete) e.currentTarget.style.backgroundColor = '#FFFFFF'; }}
+            onMouseEnter={(e) => { if (!isLoading && isComplete) e.currentTarget.style.backgroundColor = 'var(--theme-accent)'; }}
+            onMouseLeave={(e) => { if (!isLoading && isComplete) e.currentTarget.style.backgroundColor = 'var(--theme-text)'; }}
           >
             {isLoading ? (
               <Loader2 style={{ width: '18px', height: '18px', animation: 'spin 1s linear infinite' }} />
@@ -245,7 +246,7 @@ export const VerifyOtp: React.FC = () => {
           style={{
             marginTop: '28px',
             paddingTop: '20px',
-            borderTop: '1px solid #27272A',
+            borderTop: '1px solid var(--theme-border)',
             textAlign: 'center',
           }}
         >
@@ -253,14 +254,14 @@ export const VerifyOtp: React.FC = () => {
             to="/forgot-password"
             style={{
               fontSize: '13px',
-              color: '#A1A1AA',
+              color: 'var(--theme-text-muted)',
               textDecoration: 'none',
               display: 'inline-flex',
               alignItems: 'center',
               gap: '6px',
             }}
-            onMouseEnter={(e) => (e.currentTarget.style.color = '#D0FD1B')}
-            onMouseLeave={(e) => (e.currentTarget.style.color = '#A1A1AA')}
+            onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--theme-accent)')}
+            onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--theme-text-muted)')}
           >
             <ArrowLeft style={{ width: '14px', height: '14px' }} />
             Try different email

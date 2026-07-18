@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import axiosInstance from '../../api/axiosInstance';
 import { AuthContext } from '../../context/AuthContext';
 import { Shield, Eye, EyeOff, LogIn, Loader2, AlertCircle } from 'lucide-react';
+import type { AxiosError } from 'axios';
 
 export const Login: React.FC = () => {
   const navigate = useNavigate();
@@ -35,7 +36,7 @@ export const Login: React.FC = () => {
       }
     } catch (err: unknown) {
       if (err && typeof err === 'object' && 'isAxiosError' in err) {
-        const axiosErr = err as any;
+        const axiosErr = err as AxiosError<{ message?: string }>;
         setError(axiosErr.response?.data?.message || 'Login failed. Please check your credentials.');
       } else if (err instanceof Error) {
         setError(err.message);
@@ -48,7 +49,7 @@ export const Login: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4" style={{ backgroundColor: '#09090B' }}>
+    <div className="min-h-screen flex items-center justify-center p-4" style={{ backgroundColor: 'var(--theme-bg)' }}>
       {/* Background glow */}
       <div
         className="absolute pointer-events-none"
@@ -58,7 +59,7 @@ export const Login: React.FC = () => {
           transform: 'translateX(-50%)',
           width: '500px',
           height: '500px',
-          background: 'radial-gradient(circle, rgba(208,253,27,0.06) 0%, transparent 70%)',
+          background: 'radial-gradient(circle, rgba(255,60,49,0.06) 0%, transparent 70%)',
           borderRadius: '50%',
         }}
       />
@@ -67,8 +68,8 @@ export const Login: React.FC = () => {
         className="w-full relative"
         style={{
           maxWidth: '420px',
-          backgroundColor: '#18181B',
-          border: '1px solid #27272A',
+          backgroundColor: 'var(--theme-surface)',
+          border: '1px solid var(--theme-border)',
           borderRadius: '16px',
           padding: '40px 32px',
           boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)',
@@ -80,8 +81,8 @@ export const Login: React.FC = () => {
             style={{
               width: '48px',
               height: '48px',
-              backgroundColor: '#09090B',
-              border: '1px solid #27272A',
+              backgroundColor: 'var(--theme-bg)',
+              border: '1px solid var(--theme-border)',
               borderRadius: '12px',
               display: 'inline-flex',
               alignItems: 'center',
@@ -89,13 +90,13 @@ export const Login: React.FC = () => {
               marginBottom: '16px',
             }}
           >
-            <Shield style={{ width: '24px', height: '24px', color: '#D0FD1B' }} />
+            <Shield style={{ width: '24px', height: '24px', color: 'var(--theme-accent)' }} />
           </div>
           <h1
             style={{
               fontSize: '20px',
               fontWeight: 700,
-              color: '#FFFFFF',
+              color: 'var(--theme-text)',
               letterSpacing: '1px',
               textTransform: 'uppercase' as const,
               margin: '0 0 4px 0',
@@ -103,7 +104,7 @@ export const Login: React.FC = () => {
           >
             Welcome Back
           </h1>
-          <p style={{ fontSize: '13px', color: '#A1A1AA', margin: 0 }}>
+          <p style={{ fontSize: '13px', color: 'var(--theme-text-muted)', margin: 0 }}>
             Sign in to your account to continue
           </p>
         </div>
@@ -135,7 +136,7 @@ export const Login: React.FC = () => {
                 display: 'block',
                 fontSize: '13px',
                 fontWeight: 600,
-                color: '#D4D4D8',
+                color: 'var(--theme-text-secondary)',
                 marginBottom: '8px',
               }}
             >
@@ -149,9 +150,9 @@ export const Login: React.FC = () => {
               placeholder="you@example.com"
               style={{
                 width: '100%',
-                backgroundColor: '#09090B',
-                border: '1px solid #3F3F46',
-                color: '#FFFFFF',
+                backgroundColor: 'var(--theme-bg)',
+                border: '1px solid var(--theme-input-border)',
+                color: 'var(--theme-text)',
                 padding: '12px 16px',
                 borderRadius: '10px',
                 fontSize: '14px',
@@ -159,8 +160,8 @@ export const Login: React.FC = () => {
                 transition: 'border-color 0.2s',
                 boxSizing: 'border-box' as const,
               }}
-              onFocus={(e) => (e.target.style.borderColor = '#D0FD1B')}
-              onBlur={(e) => (e.target.style.borderColor = '#3F3F46')}
+              onFocus={(e) => (e.target.style.borderColor = 'var(--theme-accent)')}
+              onBlur={(e) => (e.target.style.borderColor = 'var(--theme-input-border)')}
             />
           </div>
 
@@ -171,7 +172,7 @@ export const Login: React.FC = () => {
                 style={{
                   fontSize: '13px',
                   fontWeight: 600,
-                  color: '#D4D4D8',
+                  color: 'var(--theme-text-secondary)',
                 }}
               >
                 Password
@@ -180,11 +181,11 @@ export const Login: React.FC = () => {
                 to="/forgot-password"
                 style={{
                   fontSize: '12px',
-                  color: '#A1A1AA',
+                  color: 'var(--theme-text-muted)',
                   textDecoration: 'none',
                 }}
-                onMouseEnter={(e) => (e.currentTarget.style.color = '#D0FD1B')}
-                onMouseLeave={(e) => (e.currentTarget.style.color = '#A1A1AA')}
+                onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--theme-accent)')}
+                onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--theme-text-muted)')}
               >
                 Forgot password?
               </Link>
@@ -198,9 +199,9 @@ export const Login: React.FC = () => {
                 placeholder="Enter your password"
                 style={{
                   width: '100%',
-                  backgroundColor: '#09090B',
-                  border: '1px solid #3F3F46',
-                  color: '#FFFFFF',
+                  backgroundColor: 'var(--theme-bg)',
+                  border: '1px solid var(--theme-input-border)',
+                  color: 'var(--theme-text)',
                   padding: '12px 44px 12px 16px',
                   borderRadius: '10px',
                   fontSize: '14px',
@@ -208,8 +209,8 @@ export const Login: React.FC = () => {
                   transition: 'border-color 0.2s',
                   boxSizing: 'border-box' as const,
                 }}
-                onFocus={(e) => (e.target.style.borderColor = '#D0FD1B')}
-                onBlur={(e) => (e.target.style.borderColor = '#3F3F46')}
+                onFocus={(e) => (e.target.style.borderColor = 'var(--theme-accent)')}
+                onBlur={(e) => (e.target.style.borderColor = 'var(--theme-input-border)')}
               />
               <button
                 type="button"
@@ -222,7 +223,7 @@ export const Login: React.FC = () => {
                   background: 'none',
                   border: 'none',
                   cursor: 'pointer',
-                  color: '#71717A',
+                  color: 'var(--theme-text-muted)',
                   padding: '4px',
                   display: 'flex',
                   alignItems: 'center',
@@ -239,8 +240,8 @@ export const Login: React.FC = () => {
             disabled={isLoading}
             style={{
               width: '100%',
-              backgroundColor: isLoading ? '#A1A1AA' : '#FFFFFF',
-              color: '#09090B',
+              backgroundColor: isLoading ? 'var(--theme-text-muted)' : 'var(--theme-text)',
+              color: 'var(--theme-bg)',
               fontWeight: 700,
               fontSize: '14px',
               padding: '14px',
@@ -254,8 +255,8 @@ export const Login: React.FC = () => {
               transition: 'background-color 0.2s',
               opacity: isLoading ? 0.6 : 1,
             }}
-            onMouseEnter={(e) => { if (!isLoading) e.currentTarget.style.backgroundColor = '#D0FD1B'; }}
-            onMouseLeave={(e) => { if (!isLoading) e.currentTarget.style.backgroundColor = '#FFFFFF'; }}
+            onMouseEnter={(e) => { if (!isLoading) e.currentTarget.style.backgroundColor = 'var(--theme-accent)'; }}
+            onMouseLeave={(e) => { if (!isLoading) e.currentTarget.style.backgroundColor = 'var(--theme-text)'; }}
           >
             {isLoading ? (
               <Loader2 style={{ width: '18px', height: '18px', animation: 'spin 1s linear infinite' }} />
@@ -273,22 +274,22 @@ export const Login: React.FC = () => {
           style={{
             marginTop: '28px',
             paddingTop: '20px',
-            borderTop: '1px solid #27272A',
+            borderTop: '1px solid var(--theme-border)',
             textAlign: 'center',
           }}
         >
-          <p style={{ fontSize: '13px', color: '#A1A1AA', margin: 0 }}>
+          <p style={{ fontSize: '13px', color: 'var(--theme-text-muted)', margin: 0 }}>
             Don't have an account?{' '}
             <Link
               to="/register"
               style={{
-                color: '#FFFFFF',
+                color: 'var(--theme-text)',
                 fontWeight: 600,
                 textDecoration: 'underline',
                 textUnderlineOffset: '3px',
               }}
-              onMouseEnter={(e) => (e.currentTarget.style.color = '#D0FD1B')}
-              onMouseLeave={(e) => (e.currentTarget.style.color = '#FFFFFF')}
+              onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--theme-accent)')}
+              onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--theme-text)')}
             >
               Register here
             </Link>
