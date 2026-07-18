@@ -14,6 +14,7 @@ import type { NearbyLGU, NearbyLGUStatus } from '../types/ticket';
 import { fetchNearbyLGUs } from '../api/nearbyLgus';
 import type { IncidentType } from '../types/ticket';
 import { GpsPermissionModal } from '../components/GpsPermissionModal';
+import { MobileNavBar } from '../components/MobileNavBar';
 
 
 const MetricCards: React.FC<{ tickets: Ticket[]; compact?: boolean }> = ({ tickets, compact }) => {
@@ -609,8 +610,11 @@ const handleCloseMobileDetail = () => {
         </div>
       </div>
 
+      {/* MOBILE: mobile navigation bar*/}
+      <MobileNavBar />
+
       {/* MOBILE: Chat-style submission bar */}
-      <MobileSubmissionBar
+      {/*<MobileSubmissionBar
         inputText={inputText}
         setInputText={setInputText}
         photo={photo}
@@ -620,7 +624,7 @@ const handleCloseMobileDetail = () => {
         onPhotoChange={handlePhotoChange}
         onRemovePhoto={handleRemovePhoto}
         onSubmit={handleSubmit}
-      />
+      />*/}
 
       {/* MOBILE: Slide-in navigation drawer */}
       {isMobileDrawerOpen && (
