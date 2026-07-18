@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axiosInstance from '../../api/axiosInstance';
 import { UserPlus, Eye, EyeOff, Loader2, AlertCircle } from 'lucide-react';
+import type { AxiosError } from 'axios';
 
 export const Register: React.FC = () => {
   const navigate = useNavigate();
@@ -45,7 +46,7 @@ export const Register: React.FC = () => {
       navigate(`/verify-email?email=${encodeURIComponent(email)}`);
     } catch (err: unknown) {
       if (err && typeof err === 'object' && 'isAxiosError' in err) {
-        const axiosErr = err as any;
+        const axiosErr = err as AxiosError<{ message?: string }>;
         setError(axiosErr.response?.data?.message || 'Registration failed. Please try again.');
       } else {
         const message = err instanceof Error ? err.message : 'Something went wrong.';
@@ -58,9 +59,9 @@ export const Register: React.FC = () => {
 
   const inputStyle: React.CSSProperties = {
     width: '100%',
-    backgroundColor: '#09090B',
-    border: '1px solid #3F3F46',
-    color: '#FFFFFF',
+    backgroundColor: 'var(--theme-bg)',
+    border: '1px solid var(--theme-input-border)',
+    color: 'var(--theme-text)',
     padding: '12px 16px',
     borderRadius: '10px',
     fontSize: '14px',
@@ -78,20 +79,20 @@ export const Register: React.FC = () => {
     display: 'block',
     fontSize: '13px',
     fontWeight: 600,
-    color: '#D4D4D8',
+    color: 'var(--theme-text-secondary)',
     marginBottom: '8px',
   };
 
   const handleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
-    e.target.style.borderColor = '#D0FD1B';
+    e.target.style.borderColor = 'var(--theme-accent)';
   };
 
   const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
-    e.target.style.borderColor = '#3F3F46';
+    e.target.style.borderColor = 'var(--theme-input-border)';
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4" style={{ backgroundColor: '#09090B' }}>
+    <div className="min-h-screen flex items-center justify-center p-4" style={{ backgroundColor: 'var(--theme-bg)' }}>
       {/* Background glow */}
       <div
         className="absolute pointer-events-none"
@@ -101,7 +102,7 @@ export const Register: React.FC = () => {
           transform: 'translateX(-50%)',
           width: '500px',
           height: '500px',
-          background: 'radial-gradient(circle, rgba(208,253,27,0.06) 0%, transparent 70%)',
+          background: 'radial-gradient(circle, rgba(255,60,49,0.06) 0%, transparent 70%)',
           borderRadius: '50%',
         }}
       />
@@ -110,8 +111,8 @@ export const Register: React.FC = () => {
         className="w-full relative"
         style={{
           maxWidth: '420px',
-          backgroundColor: '#18181B',
-          border: '1px solid #27272A',
+          backgroundColor: 'var(--theme-surface)',
+          border: '1px solid var(--theme-border)',
           borderRadius: '16px',
           padding: '40px 32px',
           boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)',
@@ -123,8 +124,8 @@ export const Register: React.FC = () => {
             style={{
               width: '48px',
               height: '48px',
-              backgroundColor: '#09090B',
-              border: '1px solid #27272A',
+              backgroundColor: 'var(--theme-bg)',
+              border: '1px solid var(--theme-border)',
               borderRadius: '12px',
               display: 'inline-flex',
               alignItems: 'center',
@@ -132,13 +133,13 @@ export const Register: React.FC = () => {
               marginBottom: '16px',
             }}
           >
-            <UserPlus style={{ width: '24px', height: '24px', color: '#D0FD1B' }} />
+            <UserPlus style={{ width: '24px', height: '24px', color: 'var(--theme-accent)' }} />
           </div>
           <h1
             style={{
               fontSize: '20px',
               fontWeight: 700,
-              color: '#FFFFFF',
+              color: 'var(--theme-text)',
               letterSpacing: '1px',
               textTransform: 'uppercase',
               margin: '0 0 4px 0',
@@ -146,7 +147,7 @@ export const Register: React.FC = () => {
           >
             Create Account
           </h1>
-          <p style={{ fontSize: '13px', color: '#A1A1AA', margin: 0 }}>
+          <p style={{ fontSize: '13px', color: 'var(--theme-text-muted)', margin: 0 }}>
             Fill in your details to get started
           </p>
         </div>
@@ -226,7 +227,7 @@ export const Register: React.FC = () => {
                   background: 'none',
                   border: 'none',
                   cursor: 'pointer',
-                  color: '#71717A',
+                  color: 'var(--theme-text-muted)',
                   padding: '4px',
                   display: 'flex',
                   alignItems: 'center',
@@ -262,7 +263,7 @@ export const Register: React.FC = () => {
                   background: 'none',
                   border: 'none',
                   cursor: 'pointer',
-                  color: '#71717A',
+                  color: 'var(--theme-text-muted)',
                   padding: '4px',
                   display: 'flex',
                   alignItems: 'center',
@@ -279,8 +280,8 @@ export const Register: React.FC = () => {
             disabled={isLoading}
             style={{
               width: '100%',
-              backgroundColor: isLoading ? '#A1A1AA' : '#FFFFFF',
-              color: '#09090B',
+              backgroundColor: isLoading ? 'var(--theme-text-muted)' : 'var(--theme-text)',
+              color: 'var(--theme-bg)',
               fontWeight: 700,
               fontSize: '14px',
               padding: '14px',
@@ -294,8 +295,8 @@ export const Register: React.FC = () => {
               transition: 'background-color 0.2s',
               opacity: isLoading ? 0.6 : 1,
             }}
-            onMouseEnter={(e) => { if (!isLoading) e.currentTarget.style.backgroundColor = '#D0FD1B'; }}
-            onMouseLeave={(e) => { if (!isLoading) e.currentTarget.style.backgroundColor = '#FFFFFF'; }}
+            onMouseEnter={(e) => { if (!isLoading) e.currentTarget.style.backgroundColor = 'var(--theme-accent)'; }}
+            onMouseLeave={(e) => { if (!isLoading) e.currentTarget.style.backgroundColor = 'var(--theme-text)'; }}
           >
             {isLoading ? (
               <Loader2 style={{ width: '18px', height: '18px', animation: 'spin 1s linear infinite' }} />
@@ -313,22 +314,22 @@ export const Register: React.FC = () => {
           style={{
             marginTop: '28px',
             paddingTop: '20px',
-            borderTop: '1px solid #27272A',
+            borderTop: '1px solid var(--theme-border)',
             textAlign: 'center',
           }}
         >
-          <p style={{ fontSize: '13px', color: '#A1A1AA', margin: 0 }}>
+          <p style={{ fontSize: '13px', color: 'var(--theme-text-muted)', margin: 0 }}>
             Already have an account?{' '}
             <Link
               to="/login"
               style={{
-                color: '#FFFFFF',
+                color: 'var(--theme-text)',
                 fontWeight: 600,
                 textDecoration: 'underline',
                 textUnderlineOffset: '3px',
               }}
-              onMouseEnter={(e) => (e.currentTarget.style.color = '#D0FD1B')}
-              onMouseLeave={(e) => (e.currentTarget.style.color = '#FFFFFF')}
+              onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--theme-accent)')}
+              onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--theme-text)')}
             >
               Sign in here
             </Link>

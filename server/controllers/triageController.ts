@@ -43,8 +43,16 @@ const aiResponseSchema: Schema = {
       type: Type.STRING,
       description: 'Actionable LGU team dispatch instruction (e.g. Deploy City Engineering).',
     },
+     recommendedActions: {
+      type: Type.ARRAY,
+      items: { type: Type.STRING },
+      description:
+        '2-4 short, practical safety/precaution steps for affected citizens to take ' +
+        'while LGU responders are en route (e.g. "Avoid the flooded stretch of the highway", ' +
+        '"Move valuables to higher ground"). Written directly to the public, not the LGU team.',
+    },
   },
-  required: ['urgency', 'incidentType', 'location', 'summary', 'dispatchOrder'],
+  required: ['urgency', 'incidentType', 'location', 'summary', 'dispatchOrder', 'recommendedActions'],
 };
 
 export const createAndTriageTicket = async (req: Request, res: Response): Promise<void> => {
@@ -197,6 +205,9 @@ if (photoUrl && photoUrl.startsWith('data:')) {
             location: finalLocation,
             summary: parsedAIOutput.summary,
             incidentType: finalIncidentType,
+            recommendedActions: Array.isArray(parsedAIOutput.recommendedActions)
+            ? parsedAIOutput.recommendedActions
+            : [],
           },
           dispatchOrder: parsedAIOutput.dispatchOrder,
           createdAt: new Date().toISOString(),

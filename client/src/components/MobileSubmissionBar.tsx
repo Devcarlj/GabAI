@@ -56,7 +56,7 @@ export const MobileSubmissionBar: React.FC<MobileSubmissionBarProps> = ({
         />
         <label
           htmlFor="mobile-triage-photo-upload"
-          className="shrink-0 p-2 text-slate-400 hover:text-cyan-400 transition-colors cursor-pointer"
+          className="shrink-0 p-2 text-slate-400 hover:text-[var(--theme-accent)] transition-colors cursor-pointer"
           aria-label="Upload photo"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -69,7 +69,7 @@ export const MobileSubmissionBar: React.FC<MobileSubmissionBarProps> = ({
           type="button"
           onClick={onToggleGps}
           className={`shrink-0 p-2 transition-colors cursor-pointer ${
-            isGpsActive ? 'text-cyan-400' : 'text-slate-400 hover:text-slate-200'
+            isGpsActive ? 'text-[var(--theme-accent)]' : 'text-slate-400 hover:text-slate-200'
           }`}
           aria-label="Toggle Location"
           title={isGpsActive ? 'GPS Enabled' : 'Enable GPS'}
@@ -85,13 +85,13 @@ export const MobileSubmissionBar: React.FC<MobileSubmissionBarProps> = ({
           value={inputText}
           onChange={(e) => setInputText(e.target.value)}
           placeholder="Describe the incident..."
-          className="flex-1 bg-slate-950/80 border border-slate-800 rounded-full px-4 py-2.5 text-sm text-slate-200 placeholder:text-slate-500 focus:outline-none focus:border-cyan-500/50"
+          className="flex-1 bg-slate-950/80 border border-slate-800 rounded-full px-4 py-2.5 text-sm text-slate-200 placeholder:text-slate-500 focus:outline-none focus:border-[var(--theme-accent)]/50"
         />
 
         <button
           type="submit"
           disabled={loading || !inputText.trim()}
-          className="shrink-0 p-2.5 bg-cyan-500 hover:bg-cyan-400 disabled:bg-slate-800 text-slate-950 disabled:text-slate-600 rounded-full transition-colors cursor-pointer disabled:opacity-40"
+          className="shrink-0 p-2.5 bg-[var(--theme-accent)] hover:bg-[var(--theme-accent-hover)] disabled:bg-slate-800 text-[var(--theme-btn-text)] disabled:text-slate-600 rounded-full transition-colors cursor-pointer disabled:opacity-40"
           aria-label="Submit report"
         >
           {loading ? (

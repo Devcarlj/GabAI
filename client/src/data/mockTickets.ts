@@ -11,7 +11,13 @@ export const mockTickets: Ticket[] = [
     aiAnalysis: {
       urgency: "CRITICAL",
       location: "McArthur Hwy / PLV",
-      summary: "Road impassable due to knee-deep floodwater caused by garbage-clogged drainage mainline."
+      summary: "Road impassable due to knee-deep floodwater caused by garbage-clogged drainage mainline.",
+      recommendedActions: [
+    "Avoid McArthur Highway near PLV until water recedes",
+    "Do not attempt to drive or wade through the flooded stretch",
+    "Move to higher ground if you're in a low-lying area nearby",
+  ],
+
     },
     dispatchOrder: "Deploy City Engineering Clearance Team & Traffic Management Office immediately.",
     createdAt: new Date().toISOString()
@@ -23,7 +29,12 @@ export const mockTickets: Ticket[] = [
     aiAnalysis: {
       urgency: "HIGH",
       location: "Brgy. Karuhatan",
-      summary: "Localized power outage caused by a blown electrical transformer unit."
+      summary: "Localized power outage caused by a blown electrical transformer unit.",
+      recommendedActions: [
+    "Avoid McArthur Highway near PLV until water recedes",
+    "Do not attempt to drive or wade through the flooded stretch",
+    "Move to higher ground if you're in a low-lying area nearby",
+  ],
     },
     dispatchOrder: "Coordinate with Meralco emergency response team for immediate repair.",
     createdAt: new Date().toISOString()
