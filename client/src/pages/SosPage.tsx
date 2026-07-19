@@ -1,6 +1,7 @@
 import type React from "react"
 import { BriefcaseMedical, FireExtinguisher, Cctv, WavesArrowUp, LifeBuoy, Activity } from 'lucide-react';
 import type { LucideIcon } from "lucide-react";
+import { useState } from "react";
 
 interface SosPageProps {
     items?: SpecificEmergency[];
@@ -24,6 +25,12 @@ const defaultItems: SpecificEmergency[] = [
 export const SosPage: React.FC<SosPageProps> = ({
     items = defaultItems,
 }) => {
+    const [selectedEmergency, setSelectedEmergency] = useState('');
+
+    const onSelectEmergency = (id: string) => {
+        setSelectedEmergency(id)
+    }
+
     return (
         <div className="flex flex-col gap-4 p-12 min-h-screen items-center justify-center bg-[var(--theme-bg)] px-4 py-8 font-sans text-slate-100 antialiased select-none">
             <div className="flex flex-col items-center gap-4">
@@ -54,11 +61,10 @@ export const SosPage: React.FC<SosPageProps> = ({
                         <SpecificEmergencyItem
                             key={item.id}
                             item={item}
-                            isActive={false}
-                            onClick={() => { }}
+                            isActive={selectedEmergency === item.id}
+                            onClick={onSelectEmergency}
                         />
                     ))}
-
                 </div>
             </div>
         </div>
@@ -68,14 +74,14 @@ export const SosPage: React.FC<SosPageProps> = ({
 interface SpecificEmergencyProps {
     item: SpecificEmergency;
     isActive: boolean;
-    onClick: () => void;
+    onClick: (id: string) => void;
 }
 
 export const SpecificEmergencyItem: React.FC<SpecificEmergencyProps> = ({ item, isActive, onClick }) => {
     const Icon = item.icon
     return (
         <button
-            onClick={onClick}
+            onClick={() => onClick(item.id)}
             className={`flex flex-col items-center justify-center w-25 rounded-lg h-full gap-1 transition-colors bg-[var(--theme-surface)] border border-slate-900 p-4 duration-300 group outline-none ${isActive ? 'text-[var(--theme-blue)]' : 'text-zinc-500 hover:text-zinc-300'
                 }`}
             aria-current={isActive ? 'page' : undefined}
