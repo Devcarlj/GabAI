@@ -1,7 +1,7 @@
 import type React from "react"
-import { BriefcaseMedical, FireExtinguisher, Cctv, WavesArrowUp, LifeBuoy, Activity } from 'lucide-react';
+import { BriefcaseMedical, FireExtinguisher, Cctv, WavesArrowUp, LifeBuoy, Activity, MapPin } from 'lucide-react';
 import type { LucideIcon } from "lucide-react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 interface SosPageProps {
     items?: SpecificEmergency[];
@@ -25,27 +25,37 @@ const defaultItems: SpecificEmergency[] = [
 export const SosPage: React.FC<SosPageProps> = ({
     items = defaultItems,
 }) => {
-    const [selectedEmergency, setSelectedEmergency] = useState('');
+    const [selectedEmergency, setSelectedEmergency] = useState('general');
+    const [sosEmergency, setSosEmergency] = useState(false);
+    const sosTimerRef = useRef(0);
+
+    const startHold = () => {
+        sosTimerRef.current = setTimeout(() => {
+            setSosEmergency(true);
+        }, 3000);
+    };
+
+    const stopHold = () => {
+        // Cancel the action if released early
+        if (sosTimerRef.current) {
+            clearTimeout(sosTimerRef.current);
+        }
+    };
 
     const onSelectEmergency = (id: string) => {
         setSelectedEmergency(id)
     }
 
     return (
-        <div className="flex flex-col gap-4 p-12 min-h-screen items-center justify-center bg-[var(--theme-bg)] px-4 py-8 font-sans text-slate-100 antialiased select-none">
+        <div className="flex flex-col gap-4 p-12 pb-80 min-h-screen items-center justify-center bg-[var(--theme-bg)] px-4 py-8 font-sans text-slate-100 antialiased select-none md:pb-12">
             <div className="flex flex-col items-center gap-4">
-                <div className="rounded-full border border-red-500/20 bg-red-500/10 p-4 shadow-[0_0_0_12px_rgba(239,68,68,0.08)]">
-                    <button className="group relative inline-flex h-45 w-45 flex-col items-center justify-center rounded-full border border-red-400/40 bg-[color:var(--color-red)] text-black shadow-[0_14px_45px_rgba(248,113,113,0.35)] transition-all duration-200 hover:-translate-y-1 hover:bg-[color:var(--color-red)]/90 hover:shadow-[0_18px_55px_rgba(248,113,113,0.4)] focus:outline-none focus:ring-4 focus:ring-red-400/30 active:scale-[0.98]">
-                        <span className="absolute inset-0 rounded-full border border-white/20" />
-                        <span className="absolute inset-2 rounded-full border border-black/10" />
-                        <span className="relative text-5xl font-black text-white tracking-[0.25em]">SOS</span>
-                        <span className="relative mt-2 text-sm font-medium text-white text-black/80">Hold 3s to signal</span>
-                    </button>
-                </div>
-
-                <p className="max-w-xs text-center text-sm text-slate-400">
-                    Emergency assistance will be sent to your trusted contacts / LGUs.
-                </p>
+                <SosButton onStartHold={startHold} onStopHold={stopHold} />
+                {sosEmergency ? 
+                    <EmergencyNotification estimatedTime={"n"} location={"[location]"} selectedEmergency={selectedEmergency} /> :
+                    <p className="max-w-xs text-center text-sm text-slate-400">
+                        Emergency assistance will be sent to your trusted contacts / LGUs.
+                    </p>
+                }
             </div>
             <div className="flex flex-col gap-3">
                 <div className="flex flex-row justify-between gap-5">
@@ -67,6 +77,54 @@ export const SosPage: React.FC<SosPageProps> = ({
                     ))}
                 </div>
             </div>
+        </div>
+    )
+}
+
+interface SosButtonProps {
+    onStartHold: () => void;
+    onStopHold: () => void;
+}
+
+export const SosButton: React.FC<SosButtonProps> = ({ onStartHold, onStopHold }) => {
+    return (
+        <div className="rounded-full border border-red-500/20 bg-red-500/10 p-4 shadow-[0_0_0_12px_rgba(239,68,68,0.08)]">
+            <button className="group relative inline-flex h-45 w-45 flex-col items-center justify-center rounded-full border    border-red-400/40 bg-[color:var(--color-red)] text-black shadow-[0_14px_45px_rgba(248,113,113,0.35)] transition-all duration-200 hover:-translate-y-1 hover:bg-[color:var(--color-red)]/90 hover:shadow-[0_18px_55px_rgba(248,113,113,0.4)] focus:outline-none focus:ring-4 focus:ring-red-400/30 active:scale-[0.98]"
+                onMouseDown={onStartHold}
+                onMouseUp={onStopHold}
+                onMouseLeave={onStopHold} // if cursor wanders off
+                onTouchStart={onStartHold} // Mobile support
+                onTouchEnd={onStopHold} >
+                <span className="absolute inset-0 rounded-full border border-white/20" />
+                <span className="absolute inset-2 rounded-full border border-black/10" />
+                <span className="relative text-5xl font-black text-white tracking-[0.25em]">SOS</span>
+                <span className="relative mt-2 text-sm font-medium text-white text-black/80">Hold 3s to signal</span>
+            </button >
+        </div>
+    )
+}
+
+interface EmergencyNotificationProps {
+    estimatedTime: string;
+    location: string;
+    selectedEmergency?: string;
+}
+
+export const EmergencyNotification: React.FC<EmergencyNotificationProps> = ({
+    estimatedTime = 'n/a', location = 'n/a', selectedEmergency
+}) => {
+    return (
+        <div className="p-3 w-80 rounded-lg border border-slate-800 border-l-4 cursor-pointer transition-all duration-200 border-l-blue-500 bg-[var(--theme-surface)] border-[var(--theme-accent)]/50 shadow-[0_0_10px_var(--theme-accent-glow)]">
+            <div className="flex justify-between items-center mb-1">
+                <span className="text-xs font-bold text-blue-400">SOS SENT</span>
+                {/* TODO: estimated time. pede rin oras na nilagay yung emergency*/}
+                <span className="text-[10px] text-slate-500 font-mono">EST {estimatedTime} MIN</span>
+            </div>
+            <p className="text-xs text-slate-300 font-medium truncate">
+                {/* TODO: current location. */}
+                <span className="flex flex-row gap-2"><MapPin size={16} />{location}</span>
+            </p>
+            <p className="text-[11px] text-slate-400 truncate mt-1">Emergency: {selectedEmergency}</p>
         </div>
     )
 }
