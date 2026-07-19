@@ -7,6 +7,7 @@ import { VerifyEmail } from './pages/Auth/VerifyEmail';
 import { ForgotPassword } from './pages/Auth/ForgotPassword';
 import { VerifyOtp } from './pages/Auth/VerifyOtp';
 import { ResetPassword } from './pages/Auth/ResetPassword';
+import { SosPage } from './pages/SosPage';
 
 export const App: React.FC = () => {
   return (
@@ -23,6 +24,9 @@ export const App: React.FC = () => {
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/verify-otp" element={<VerifyOtp />} />
       <Route path="/reset-password" element={<ResetPassword />} />
+
+      {/* Main pages */}
+      <Route path="/sos" element={<SosPage />} />
 
       {/* 🔄 Fallback Catch-All Redirect */}
       <Route path="*" element={<Navigate to="/" replace />} />
