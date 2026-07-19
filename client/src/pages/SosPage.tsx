@@ -1,4 +1,5 @@
 import type React from "react"
+import { MobileNavBar } from "../components/MobileNavBar";
 import { BriefcaseMedical, FireExtinguisher, Cctv, WavesArrowUp, LifeBuoy, Activity, MapPin } from 'lucide-react';
 import type { LucideIcon } from "lucide-react";
 import { useRef, useState } from "react";
@@ -16,7 +17,7 @@ interface SpecificEmergency {
 const defaultItems: SpecificEmergency[] = [
     { id: 'medical', label: 'Medical', icon: BriefcaseMedical },
     { id: 'fire', label: 'Fire', icon: FireExtinguisher },
-    { id: 'crime', label: 'Crime/Police', icon: Cctv },
+    { id: 'crime', label: 'Police', icon: Cctv },
     { id: 'flood', label: 'Flood', icon: WavesArrowUp },
     { id: 'earthquake', label: 'Earthquake', icon: Activity },
     { id: 'rescue', label: 'Rescue', icon: LifeBuoy },
@@ -73,7 +74,7 @@ export const SosPage: React.FC<SosPageProps> = ({
     }
 
     return (
-        <div className="flex flex-col gap-4 p-12 pb-80 min-h-screen items-center justify-center bg-[var(--theme-bg)] px-4 py-8 font-sans text-slate-100 antialiased select-none md:pb-12">
+        <div className="flex flex-col gap-4 p-12 pb-60 min-h-screen items-center justify-center bg-[var(--theme-bg)] px-4 py-8 font-sans text-slate-100 antialiased select-none md:pb-12">
             <div className="flex flex-col items-center gap-4">
                 <SosButton onStartHold={startHold} onStopHold={stopHold} timeLeft={timeLeft} isHolding={isHolding} />
                 {signalEmergency ?
@@ -103,6 +104,7 @@ export const SosPage: React.FC<SosPageProps> = ({
                     ))}
                 </div>
             </div>
+            <MobileNavBar />
         </div>
     )
 }
