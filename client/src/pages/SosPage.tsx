@@ -16,7 +16,7 @@ interface SpecificEmergency {
 const defaultItems: SpecificEmergency[] = [
     { id: 'medical', label: 'Medical', icon: BriefcaseMedical },
     { id: 'fire', label: 'Fire', icon: FireExtinguisher },
-    { id: 'crime', label: 'Crime', icon: Cctv },
+    { id: 'crime', label: 'Crime/Police', icon: Cctv },
     { id: 'flood', label: 'Flood', icon: WavesArrowUp },
     { id: 'earthquake', label: 'Earthquake', icon: Activity },
     { id: 'rescue', label: 'Rescue', icon: LifeBuoy },
@@ -26,20 +26,46 @@ export const SosPage: React.FC<SosPageProps> = ({
     items = defaultItems,
 }) => {
     const [selectedEmergency, setSelectedEmergency] = useState('general');
-    const [sosEmergency, setSosEmergency] = useState(false);
-    const sosTimerRef = useRef(0);
+    const [timeLeft, setTimeLeft] = useState(3);
+    const [signalEmergency, setSignalEmergency] = useState(false);
+    const [isHolding, setIsHolding] = useState(false);
+    const countdownRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+    const clearCountdown = () => {
+        if (countdownRef.current) {
+            clearInterval(countdownRef.current);
+            countdownRef.current = null;
+        }
+    };
 
     const startHold = () => {
-        sosTimerRef.current = setTimeout(() => {
-            setSosEmergency(true);
-        }, 3000);
+        setIsHolding(true);
+        setTimeLeft(3);
+        setSignalEmergency(false);
+        clearCountdown();
+
+        countdownRef.current = window.setInterval(() => {
+            setTimeLeft((prev) => {
+                if (prev <= 1) {
+                    clearCountdown();
+                    setSignalEmergency(true);
+                    setIsHolding(false);
+                    return 0;
+                }
+
+                return prev - 1;
+            });
+        }, 1000);
     };
 
     const stopHold = () => {
-        // Cancel the action if released early
-        if (sosTimerRef.current) {
-            clearTimeout(sosTimerRef.current);
+        if (signalEmergency) {
+            return;
         }
+
+        clearCountdown();
+        setIsHolding(false);
+        setTimeLeft(3);
     };
 
     const onSelectEmergency = (id: string) => {
@@ -49,8 +75,8 @@ export const SosPage: React.FC<SosPageProps> = ({
     return (
         <div className="flex flex-col gap-4 p-12 pb-80 min-h-screen items-center justify-center bg-[var(--theme-bg)] px-4 py-8 font-sans text-slate-100 antialiased select-none md:pb-12">
             <div className="flex flex-col items-center gap-4">
-                <SosButton onStartHold={startHold} onStopHold={stopHold} />
-                {sosEmergency ? 
+                <SosButton onStartHold={startHold} onStopHold={stopHold} timeLeft={timeLeft} isHolding={isHolding} />
+                {signalEmergency ?
                     <EmergencyNotification estimatedTime={"n"} location={"[location]"} selectedEmergency={selectedEmergency} /> :
                     <p className="max-w-xs text-center text-sm text-slate-400">
                         Emergency assistance will be sent to your trusted contacts / LGUs.
@@ -84,12 +110,14 @@ export const SosPage: React.FC<SosPageProps> = ({
 interface SosButtonProps {
     onStartHold: () => void;
     onStopHold: () => void;
+    timeLeft: number;
+    isHolding: boolean;
 }
 
-export const SosButton: React.FC<SosButtonProps> = ({ onStartHold, onStopHold }) => {
+export const SosButton: React.FC<SosButtonProps> = ({ onStartHold, onStopHold, timeLeft, isHolding }) => {
     return (
         <div className="rounded-full border border-red-500/20 bg-red-500/10 p-4 shadow-[0_0_0_12px_rgba(239,68,68,0.08)]">
-            <button className="group relative inline-flex h-45 w-45 flex-col items-center justify-center rounded-full border    border-red-400/40 bg-[color:var(--color-red)] text-black shadow-[0_14px_45px_rgba(248,113,113,0.35)] transition-all duration-200 hover:-translate-y-1 hover:bg-[color:var(--color-red)]/90 hover:shadow-[0_18px_55px_rgba(248,113,113,0.4)] focus:outline-none focus:ring-4 focus:ring-red-400/30 active:scale-[0.98]"
+            <button className="group relative inline-flex h-45 w-45 flex-col items-center justify-center rounded-full border border-red-400/40 bg-[color:var(--color-red)] text-black shadow-[0_14px_45px_rgba(248,113,113,0.35)] transition-all duration-200 hover:-translate-y-1 hover:bg-[color:var(--color-red)]/90 hover:shadow-[0_18px_55px_rgba(248,113,113,0.4)] focus:outline-none focus:ring-4 focus:ring-red-400/30 active:scale-[0.98]"
                 onMouseDown={onStartHold}
                 onMouseUp={onStopHold}
                 onMouseLeave={onStopHold} // if cursor wanders off
@@ -98,7 +126,9 @@ export const SosButton: React.FC<SosButtonProps> = ({ onStartHold, onStopHold })
                 <span className="absolute inset-0 rounded-full border border-white/20" />
                 <span className="absolute inset-2 rounded-full border border-black/10" />
                 <span className="relative text-5xl font-black text-white tracking-[0.25em]">SOS</span>
-                <span className="relative mt-2 text-sm font-medium text-white text-black/80">Hold 3s to signal</span>
+                <span className="relative mt-2 text-sm font-semibold text-white/90">
+                    {isHolding ? `${timeLeft}s` : 'Hold 3s to signal'}
+                </span>
             </button >
         </div>
     )
