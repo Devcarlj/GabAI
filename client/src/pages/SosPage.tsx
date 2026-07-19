@@ -104,6 +104,16 @@ export const SosPage: React.FC<SosPageProps> = ({
                     ))}
                 </div>
             </div>
+            {/* Live Location */}
+            <div className="flex flex-row items-center justify-between w-80 rounded-lg h-15 gap-1 transition-colors bg-[var(--theme-surface)] border border-slate-900 p-4 duration-300 group outline-none">
+                <div className="flex flex-row gap-2">
+                    <MapPin className="text-[var(--theme-blue)]" />
+                    <span className="max-w-xs font-semibold text-center text-md text-slate">Live Location</span>
+                </div>
+                <button type="button" className="w-8 h-4 flex items-center rounded-full p-0.5 transition-colors cursor-pointer bg-[var(--theme-accent)] justify-end">
+                    <div className="bg-slate-950 w-3 h-3 rounded-full shadow-md transition-transform"></div>
+                </button>
+            </div>
             <MobileNavBar />
         </div>
     )
