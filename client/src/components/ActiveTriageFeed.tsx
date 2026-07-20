@@ -43,6 +43,8 @@ export const ActiveTriageFeed: React.FC<ActiveTriageFeedProps> = ({
   );
 
   return (
+
+    
     <div className={`bg-[var(--theme-surface)]/90 border border-[var(--theme-border)] rounded-xl p-4 flex flex-col gap-3 h-full ${className}`}>
       <div className="border-b border-slate-800 pb-2">
         <h2 className="text-xs font-mono font-bold text-slate-400 tracking-wider">
