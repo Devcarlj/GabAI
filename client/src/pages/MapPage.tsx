@@ -9,7 +9,7 @@ import { MapViewSection } from '../components/MapViewSection';
 import { ActiveTriageFeed } from '../components/ActiveTriageFeed';
 import { fetchReverseGeocode } from '../api/geocode';
 import { SubmissionForm } from '../components/SubmissionForm';
-import { MobileSubmissionBar } from '../components/MobileSubmissionBar';
+/* import { MobileSubmissionBar } from '../components/MobileSubmissionBar';*/
 import type { NearbyLGU, NearbyLGUStatus } from '../types/ticket';
 import { fetchNearbyLGUs } from '../api/nearbyLgus';
 import type { IncidentType } from '../types/ticket';
@@ -325,43 +325,37 @@ useEffect(() => {
 
 
 // 1. Selecting a ticket
-const handleSelectTicket = (ticket: Ticket | null, options?: { immediateMobileCard?: boolean }) => {
-  clearNearLGUs(); //
+const handleSelectTicket = (ticket: Ticket | null) => {
+  clearNearLGUs();
   if (!ticket) {
     // User unselected or closed ticket
-    setSelectedTicket(null); //
-    setIsMobileDetailOpen(false); //
+    setSelectedTicket(null);
+    setIsMobileDetailOpen(false);
     return;
   }
 
   isClosingRef.current = false; // Reset close flag
-  setSelectedTicket(ticket); //
-  setMapFocusKey((k) => k + 1); //[cite: 5]
-  setActiveRightPanel('detail'); //[cite: 5]
-  setIsRightPanelOpen(true); //[cite: 5]
+  setSelectedTicket(ticket);
+  setMapFocusKey((k) => k + 1);
+  setActiveRightPanel('detail');
+  setIsRightPanelOpen(true);
 
-  const isMobile = window.matchMedia('(max-width: 1023px)').matches; //[cite: 5]
+  const isMobile = window.matchMedia('(max-width: 1023px)').matches;
 
+  // Open the card immediately on mobile while the map begins zooming
   if (isMobile) {
-    if (options?.immediateMobileCard || !ticket.coordinates?.lat || !ticket.coordinates?.lng) {
-      // Feed clicks or tickets without coordinates open the card right away
-      setIsMobileDetailOpen(true);
-    } else {
-      // Map pin clicks hide the card while the map flies to the coordinates,
-      // letting `onZoomComplete` display it after the camera stops.
-      setIsMobileDetailOpen(false);
-    }
+    setIsMobileDetailOpen(true);
   }
 };
 
-// 2. Triggered when map fly-to finishes
+
 // 2. Triggered when map fly-to finishes
 const handleMapZoomComplete = () => {
-  const isMobile = window.matchMedia('(max-width: 1023px)').matches; //[cite: 5]
+  const isMobile = window.matchMedia('(max-width: 1023px)').matches;
 
-  // ONLY open if on mobile, a ticket is selected, and the user didn't hit close mid-flight
-  if (isMobile && selectedTicket && !isClosingRef.current) { //[cite: 5]
-    setIsMobileDetailOpen(true); //[cite: 5]
+  // Keep closed if the user explicitly clicked the 'X' button during the flyTo animation
+  if (isMobile && selectedTicket && isClosingRef.current) {
+    setIsMobileDetailOpen(false);
   }
 };
 
@@ -445,19 +439,26 @@ const handleCloseMobileDetail = () => {
   const [mobileView, setMobileView] = useState<'map' | 'feed'>('map');
   const navigate = useNavigate();
 
-  const handleMobileNavClick = (id: string) => {
-    if (id === 'map' || id === 'feed') {
-      setMobileView(id);
-      return;
-    }
-    if (id === 'user') {
-      navigate('/profile');
-      return;
-    }
-    // 'report' — no dedicated view yet; TODO: wire to the submission flow
-    // (MobileSubmissionBar) once that's ready to ship on mobile.
-  };
+const handleMobileNavClick = (id: string) => {
+  if (id === 'feed') {
+    navigate('/feed'); // <--- Redirect directly to FeedPage.tsx
+    return;
+  }
+  if (id === 'map') {
+    setMobileView('map');
+    return;
+  }
+  if (id === 'user') {
+    navigate('/profile');
+    return;
+  }
+  if (id === 'report') {
+    navigate('/report'); // or report page route
+    return;
+  }
+};
 
+  const [isFilterFeedOpen, setIsFilterFeedOpen] = useState(false);
 
   return (
     <div className="flex h-dvh lg:h-screen bg-[var(--theme-bg)] text-slate-100 font-sans antialiased overflow-hidden select-none">
@@ -532,6 +533,7 @@ const handleCloseMobileDetail = () => {
                 searchValue={mobileSearchValue}
                 onSearchChange={setMobileSearchValue}
                 onLocateClick={handleToggleGps}
+                onFilterClick={() => setIsFilterFeedOpen(true)} // <--- Wire filter button
               />
 
               {/* MOBILE: hazard level legend, replaces the old metrics row.
@@ -680,6 +682,32 @@ const handleCloseMobileDetail = () => {
         onRemovePhoto={handleRemovePhoto}
         onSubmit={handleSubmit}
       />*/}
+
+
+      {/* Mobile Filter / Triage Feed Modal */}
+      {isFilterFeedOpen && (
+        <div className="lg:hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex flex-col p-4">
+          <div className="flex justify-between items-center mb-3">
+            <h3 className="font-mono text-xs font-bold text-[var(--theme-accent)]">INCIDENT FILTER & FEED</h3>
+            <button 
+              onClick={() => setIsFilterFeedOpen(false)}
+              className="text-slate-400 hover:text-white text-sm"
+            >
+              ✕ Close
+            </button>
+          </div>
+          <div className="flex-1 overflow-y-auto">
+            <ActiveTriageFeed
+              tickets={tickets}
+              selectedTicketId={selectedTicket?._id || null}
+              onSelectTicket={(t) => {
+                handleSelectTicket(t);
+                setIsFilterFeedOpen(false); // Close feed modal so map + detail card are visible
+              }}
+            />
+          </div>
+        </div>
+      )}
 
       {/* MOBILE: Slide-in navigation drawer */}
       {isMobileDrawerOpen && (

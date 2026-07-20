@@ -4,6 +4,7 @@ import { BriefcaseMedical, FireExtinguisher, Cctv, WavesArrowUp, LifeBuoy, Activ
 import type { LucideIcon } from "lucide-react";
 import { useRef, useState } from "react";
 
+
 interface SosPageProps {
     items?: SpecificEmergency[];
 }
@@ -26,11 +27,14 @@ const defaultItems: SpecificEmergency[] = [
 export const SosPage: React.FC<SosPageProps> = ({
     items = defaultItems,
 }) => {
+   
     const [selectedEmergency, setSelectedEmergency] = useState('general');
     const [timeLeft, setTimeLeft] = useState(3);
     const [signalEmergency, setSignalEmergency] = useState(false);
     const [isHolding, setIsHolding] = useState(false);
     const countdownRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+    
 
     const clearCountdown = () => {
         if (countdownRef.current) {
@@ -114,7 +118,7 @@ export const SosPage: React.FC<SosPageProps> = ({
                     <div className="bg-slate-950 w-3 h-3 rounded-full shadow-md transition-transform"></div>
                 </button>
             </div>
-            <MobileNavBar />
+            <MobileNavBar/>
         </div>
     )
 }

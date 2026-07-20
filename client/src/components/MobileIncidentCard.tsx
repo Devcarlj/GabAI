@@ -103,7 +103,7 @@ export const MobileIncidentCard: React.FC<MobileIncidentCardProps> = ({
   const statusLabel = (ticket as unknown as { status?: string }).status ?? 'Active';
 
   return (
-    <div className="relative flex flex-col gap-3.5">
+    <div className="relative flex flex-col gap-3.5 pb-10">
       {/* Drag handle */}
       <div className="flex justify-center -mt-1">
         <div className="w-10 h-1 rounded-full bg-slate-700" />

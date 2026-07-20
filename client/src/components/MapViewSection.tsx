@@ -191,9 +191,14 @@ tickets.forEach((ticket) => {
         ${iconSvg}
       </div>
     `;
+    
+      // Inside MapViewSection.tsx -> marker click event listener
       el.addEventListener('click', (e) => {
         e.stopPropagation();
         
+        // ALWAYS trigger selection so mobile detail card re-opens if closed
+        setSelectedTicket(ticket);
+
         if (selectedTicket?._id === ticket._id) {
           const isMobile = window.innerWidth < 768;
           map.flyTo({
@@ -203,8 +208,6 @@ tickets.forEach((ticket) => {
             speed: 1.2,
             curve: 1.4,
           });
-        } else {
-          setSelectedTicket(ticket);
         }
       });
 
