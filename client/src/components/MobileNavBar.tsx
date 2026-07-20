@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Newspaper, Map, Shield, UserRound } from 'lucide-react';
 import type { LucideIcon } from "lucide-react";
 
@@ -6,6 +7,7 @@ export interface NavItem {
     id: string;
     label: string;
     icon: LucideIcon;
+    path: string;
 }
 
 export interface MobileNavBarProps {
@@ -16,22 +18,44 @@ export interface MobileNavBarProps {
 }
 
 const defaultItems: NavItem[] = [
-    { id: 'feed', label: 'Feed', icon: Newspaper },
-    { id: 'map', label: 'Map', icon: Map },
-    { id: 'report', label: 'Report', icon: Shield },
-    { id: 'user', label: 'User', icon: UserRound },
+    { id: 'feed', label: 'Feed', icon: Newspaper, path: '/feed' },
+    { id: 'map', label: 'Map', icon: Map, path: '/' },
+    { id: 'report', label: 'Report', icon: Shield, path: '/report' },
+    { id: 'user', label: 'User', icon: UserRound, path: '/profile' },
 ];
 
 export const MobileNavBar: React.FC<MobileNavBarProps> = ({
     items = defaultItems,
-    activeId = 'feed',
+    activeId,
     onItemClick,
     onSosClick,
 }) => {
+    const navigate = useNavigate();
+    const location = useLocation();
+
     // Split items for left and right of the central SOS button
     const midIndex = Math.ceil(items.length / 2);
     const leftItems = items.slice(0, midIndex);
     const rightItems = items.slice(midIndex);
+
+    // Auto-detect active item from route URL if activeId is not explicitly passed
+    const currentActiveId = activeId || items.find(item => item.path === location.pathname)?.id;
+
+    const handleItemClick = (item: NavItem) => {
+        if (onItemClick) {
+            onItemClick(item.id);
+        } else {
+            navigate(item.path);
+        }
+    };
+
+    const handleSosClick = () => {
+        if (onSosClick) {
+            onSosClick();
+        } else {
+            navigate('/sos');
+        }
+    };
 
     return (
         <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 pointer-events-none">
@@ -42,9 +66,9 @@ export const MobileNavBar: React.FC<MobileNavBarProps> = ({
                 {/* Central SOS Button */}
                 <div className="absolute left-1/2 top-0 -translate-x-1/2 -translate-y-8 flex justify-center z-10">
                     <button
-                        onClick={onSosClick}
+                        onClick={handleSosClick}
                         aria-label="Emergency SOS"
-                          className="group w-[92px] h-[92px] rounded-full 
+                        className="group w-[92px] h-[92px] rounded-full 
                             bg-gradient-to-b from-[var(--color-red)] to-[var(--color-red)] 
                             border-8 border-zinc-900 
                             shadow-[0_0_50px_var(--color-red)] 
@@ -62,8 +86,8 @@ export const MobileNavBar: React.FC<MobileNavBarProps> = ({
                         <li key={item.id} className="h-full">
                             <NavItemComponent
                                 item={item}
-                                isActive={activeId === item.id}
-                                onClick={() => onItemClick?.(item.id)}
+                                isActive={currentActiveId === item.id}
+                                onClick={() => handleItemClick(item)}
                             />
                         </li>
                     ))}
@@ -77,8 +101,8 @@ export const MobileNavBar: React.FC<MobileNavBarProps> = ({
                         <li key={item.id} className="h-full">
                             <NavItemComponent
                                 item={item}
-                                isActive={activeId === item.id}
-                                onClick={() => onItemClick?.(item.id)}
+                                isActive={currentActiveId === item.id}
+                                onClick={() => handleItemClick(item)}
                             />
                         </li>
                     ))}

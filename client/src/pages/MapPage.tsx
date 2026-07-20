@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import type { Ticket } from '../types/ticket';
 import { IncidentDetailCard } from '../components/IncidentDetailCard';
 import { LGUDetailCard } from '../components/LGUdetailcard';
@@ -9,12 +9,15 @@ import { MapViewSection } from '../components/MapViewSection';
 import { ActiveTriageFeed } from '../components/ActiveTriageFeed';
 import { fetchReverseGeocode } from '../api/geocode';
 import { SubmissionForm } from '../components/SubmissionForm';
-import { MobileSubmissionBar } from '../components/MobileSubmissionBar';
+/* import { MobileSubmissionBar } from '../components/MobileSubmissionBar';*/
 import type { NearbyLGU, NearbyLGUStatus } from '../types/ticket';
 import { fetchNearbyLGUs } from '../api/nearbyLgus';
 import type { IncidentType } from '../types/ticket';
 import { GpsPermissionModal } from '../components/GpsPermissionModal';
 import { MobileNavBar } from '../components/MobileNavBar';
+import { MobileHazardLegend } from '../components/MobileHazardLegend';
+import { MobileMapOverlay } from '../components/MobileMapOverlay';
+import { MobileIncidentCard } from '../components/MobileIncidentCard';
 
 
 const MetricCards: React.FC<{ tickets: Ticket[]; compact?: boolean }> = ({ tickets, compact }) => {
@@ -320,6 +323,7 @@ useEffect(() => {
   };
 }, []);
 
+
 // 1. Selecting a ticket
 const handleSelectTicket = (ticket: Ticket | null) => {
   clearNearLGUs();
@@ -338,21 +342,20 @@ const handleSelectTicket = (ticket: Ticket | null) => {
 
   const isMobile = window.matchMedia('(max-width: 1023px)').matches;
 
-  // Desktop opens instantly; Mobile waits for coordinates zoom or opens immediately if no coords
-  if (!isMobile) {
-    setIsMobileDetailOpen(false);
-  } else if (!ticket.coordinates?.lat || !ticket.coordinates?.lng) {
+  // Open the card immediately on mobile while the map begins zooming
+  if (isMobile) {
     setIsMobileDetailOpen(true);
   }
 };
+
 
 // 2. Triggered when map fly-to finishes
 const handleMapZoomComplete = () => {
   const isMobile = window.matchMedia('(max-width: 1023px)').matches;
 
-  // ONLY open if the user didn't hit the close button while zooming
-  if (isMobile && selectedTicket && !isClosingRef.current) {
-    setIsMobileDetailOpen(true);
+  // Keep closed if the user explicitly clicked the 'X' button during the flyTo animation
+  if (isMobile && selectedTicket && isClosingRef.current) {
+    setIsMobileDetailOpen(false);
   }
 };
 
@@ -432,10 +435,33 @@ const handleCloseMobileDetail = () => {
   };
 
   const [showGpsModal, setShowGpsModal] = useState<boolean>(false);
+  const [mobileSearchValue, setMobileSearchValue] = useState<string>('');
+  const [mobileView, setMobileView] = useState<'map' | 'feed'>('map');
+  const navigate = useNavigate();
 
+const handleMobileNavClick = (id: string) => {
+  if (id === 'feed') {
+    navigate('/feed'); // <--- Redirect directly to FeedPage.tsx
+    return;
+  }
+  if (id === 'map') {
+    setMobileView('map');
+    return;
+  }
+  if (id === 'user') {
+    navigate('/profile');
+    return;
+  }
+  if (id === 'report') {
+    navigate('/report'); // or report page route
+    return;
+  }
+};
+
+  const [isFilterFeedOpen, setIsFilterFeedOpen] = useState(false);
 
   return (
-    <div className="flex min-h-screen lg:h-screen bg-[var(--theme-bg)] text-slate-100 font-sans antialiased overflow-x-hidden lg:overflow-hidden select-none">
+    <div className="flex h-dvh lg:h-screen bg-[var(--theme-bg)] text-slate-100 font-sans antialiased overflow-hidden select-none">
 
       {/* 1. LEFT SIDEBAR — desktop only */}
       <aside className="hidden lg:flex w-16 border-r border-slate-900 bg-[var(--theme-surface)] flex-col items-center py-4 justify-between shrink-0">
@@ -469,24 +495,23 @@ const handleCloseMobileDetail = () => {
       </aside>
 
       {/* MAIN LAYOUT WRAPPER */}
-      <div className="flex-1 flex flex-col lg:p-4 lg:overflow-hidden lg:h-full lg:justify-between pb-18 lg:pb-0 overflow-y-auto lg:overflow-y-hidden min-h-0">
+      <div className="flex-1 flex flex-col lg:p-4 lg:justify-between pb-18 lg:pb-0 overflow-hidden min-h-0">
 
         {/* 2. TOP NAVBAR */}
         <NavbarHeader onToggleDrawer={() => setIsMobileDrawerOpen(true)} />
 
-        {/* MOBILE ONLY: Compact metrics — 2 rows × 3 columns */}
-        <div className="mobile-metrics-row border-b border-slate-900/50 shrink-0 lg:hidden!">
-          <MetricCards tickets={tickets} compact />
-        </div>
-
         {/* THREE-COLUMN FIXED-HEIGHT WORKSPACE */}
-        <div className="flex-1 flex flex-col lg:grid lg:grid-cols-3 gap-0 lg:gap-4 lg:overflow-hidden items-stretch lg:mb-1 relative min-h-0 lg:min-h-0">
+        <div className="flex-1 flex flex-col lg:grid lg:grid-cols-3 gap-0 lg:gap-4 overflow-hidden items-stretch lg:mb-1 relative min-h-0">
 
           {/* COLUMN 1 & 2: GEO-MAP & KPI GRID */}
-          <div className={`${isRightPanelOpen ? 'lg:col-span-2' : 'lg:col-span-3'} flex flex-col gap-0 lg:gap-4 lg:overflow-hidden lg:h-full min-h-0 transition-all duration-300`}>
+          <div className={`${isRightPanelOpen ? 'lg:col-span-2' : 'lg:col-span-3'} flex flex-col gap-0 lg:gap-4 overflow-hidden h-full min-h-0 transition-all duration-300`}>
 
-            {/* GIS MAP CONTAINER */}
-            <div className="h-[42vh] min-h-60 lg:flex-1 lg:h-full relative bg-[var(--theme-surface-elevated)] rounded-none lg:rounded-2xl border-0 lg:border border-slate-900 overflow-hidden shrink-0 lg:shrink lg:min-h-0">
+            {/* GIS MAP CONTAINER — fills all remaining height below the navbar on mobile.
+                Hidden (not unmounted) when the mobile Feed tab is active, so map/GPS state
+                isn't lost switching tabs; always visible on desktop regardless of mobileView. */}
+            <div
+              className={`${mobileView === 'feed' ? 'hidden' : 'flex'} lg:flex flex-1 min-h-60 lg:h-full relative bg-[var(--theme-surface-elevated)] rounded-none lg:rounded-2xl border-0 lg:border border-slate-900 overflow-hidden lg:min-h-0`}
+            >
               <MapViewSection
                 tickets={tickets}
                 selectedTicket={selectedTicket}
@@ -502,17 +527,49 @@ const handleCloseMobileDetail = () => {
                 onPhViewClick={clearNearLGUs}
                 onSelectLGU={handleSelectLGU}
               />
+
+              {/* MOBILE: floating search bar + layer/filter/locate controls */}
+              <MobileMapOverlay
+                searchValue={mobileSearchValue}
+                onSearchChange={setMobileSearchValue}
+                onLocateClick={handleToggleGps}
+                onFilterClick={() => setIsFilterFeedOpen(true)} // <--- Wire filter button
+              />
+
+              {/* MOBILE: hazard level legend, replaces the old metrics row.
+                  Hidden while the incident overlay is open so the two don't collide. */}
+              {!(isMobileDetailOpen && selectedTicket) && <MobileHazardLegend />}
+
+              {/* MOBILE: incident detail floats over the bottom of the map itself,
+                  instead of a separate full-screen sheet with a dim backdrop. */}
+              {isMobileDetailOpen && selectedTicket && (
+                <div className="lg:hidden absolute bottom-0 left-0 right-0 z-30 max-h-[75%] overflow-y-auto bg-[var(--theme-surface)]/97 backdrop-blur-sm border-t border-slate-800 rounded-t-2xl shadow-[0_-8px_30px_rgba(0,0,0,0.5)] px-4 pt-3 pb-[calc(env(safe-area-inset-bottom)+16px)]">
+                  <MobileIncidentCard
+                    ticket={selectedTicket}
+                    userLocation={userLocation}
+                    showNearLGUs={showNearLGUs}
+                    nearbyLGUsStatus={nearbyLGUsStatus}
+                    onToggleNearLGUs={handleToggleNearLGUs}
+                    onClose={handleCloseMobileDetail} // Updated to block re-opening
+                  />
+                </div>
+              )}
             </div>
 
-            {/* MOBILE: Triage feed below map — scroll to view */}
-            <div className="lg:hidden shrink-0 px-3 pt-3 pb-4">
-              <ActiveTriageFeed
-                tickets={tickets}
-                selectedTicketId={selectedTicket?._id || null}
-                onSelectTicket={handleSelectTicket}
-                embedded
-              />
-            </div>
+            {/* MOBILE: full-height Feed tab — replaces the map area entirely,
+                only shown when the bottom nav's Feed tab is active */}
+            {mobileView === 'feed' && (
+              <div className="lg:hidden flex-1 min-h-0 overflow-y-auto px-3 py-3">
+                <ActiveTriageFeed
+                  tickets={tickets}
+                  selectedTicketId={selectedTicket?._id || null}
+                  onSelectTicket={(t) => {
+                    handleSelectTicket(t);
+                    setMobileView('map'); // jump back to the map so the pin + detail sheet are visible
+                  }}
+                />
+              </div>
+            )}
 
             {/* DESKTOP KPI GRID */}
             <div className="hidden lg:grid grid-cols-3 gap-3 shrink-0 h-31.25">
@@ -611,7 +668,7 @@ const handleCloseMobileDetail = () => {
       </div>
 
       {/* MOBILE: mobile navigation bar*/}
-      <MobileNavBar />
+      <MobileNavBar activeId={mobileView} onItemClick={handleMobileNavClick} />
 
       {/* MOBILE: Chat-style submission bar */}
       {/*<MobileSubmissionBar
@@ -625,6 +682,32 @@ const handleCloseMobileDetail = () => {
         onRemovePhoto={handleRemovePhoto}
         onSubmit={handleSubmit}
       />*/}
+
+
+      {/* Mobile Filter / Triage Feed Modal */}
+      {isFilterFeedOpen && (
+        <div className="lg:hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex flex-col p-4">
+          <div className="flex justify-between items-center mb-3">
+            <h3 className="font-mono text-xs font-bold text-[var(--theme-accent)]">INCIDENT FILTER & FEED</h3>
+            <button 
+              onClick={() => setIsFilterFeedOpen(false)}
+              className="text-slate-400 hover:text-white text-sm"
+            >
+              ✕ Close
+            </button>
+          </div>
+          <div className="flex-1 overflow-y-auto">
+            <ActiveTriageFeed
+              tickets={tickets}
+              selectedTicketId={selectedTicket?._id || null}
+              onSelectTicket={(t) => {
+                handleSelectTicket(t);
+                setIsFilterFeedOpen(false); // Close feed modal so map + detail card are visible
+              }}
+            />
+          </div>
+        </div>
+      )}
 
       {/* MOBILE: Slide-in navigation drawer */}
       {isMobileDrawerOpen && (
@@ -651,41 +734,6 @@ const handleCloseMobileDetail = () => {
           </div>
         </>
       )}
-
-        {/* MOBILE ONLY: Incident detail bottom sheet */}
-        {isMobileDetailOpen && selectedTicket && (
-          <>
-            <div
-              className="lg:hidden mobile-bottom-sheet-backdrop"
-              onClick={handleCloseMobileDetail} // Updated to block re-opening
-              aria-hidden="true"
-            />
-            <div className="lg:hidden mobile-bottom-sheet">
-              <div className="flex items-center justify-between px-4 py-3 border-b border-slate-900 shrink-0">
-                <span className="text-[10px] font-bold tracking-wider text-slate-400 uppercase font-mono">
-                  Incident Detail
-                </span>
-                <button
-                  onClick={handleCloseMobileDetail} // Updated to block re-opening
-                  className="p-1.5 text-slate-500 hover:text-slate-300 transition-colors cursor-pointer"
-                  aria-label="Close incident detail"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
-              <div className="flex-1 overflow-y-auto p-4 min-h-0">
-                <IncidentDetailCard
-                  ticket={selectedTicket}
-                  showNearLGUs={showNearLGUs}
-                  nearbyLGUsStatus={nearbyLGUsStatus}
-                  onToggleNearLGUs={handleToggleNearLGUs}
-                />
-              </div>
-            </div>
-          </>
-        )}
 
         {/* MOBILE ONLY: LGU detail bottom sheet */}
         {isMobileLguOpen && selectedLGU && (

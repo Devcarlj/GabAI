@@ -40,6 +40,10 @@ GabAI
 │  │  │  │  └─ DashboardShells.tsx
 │  │  │  ├─ LGUdetailcard.tsx
 │  │  │  ├─ MapViewSection.tsx
+│  │  │  ├─ MobileHazardLegend.tsx
+│  │  │  ├─ MobileIncidentCard.tsx
+│  │  │  ├─ MobileMapOverlay.tsx
+│  │  │  ├─ MobileNavBar.tsx
 │  │  │  ├─ MobileSubmissionBar.tsx
 │  │  │  ├─ NavbarHeader.tsx
 │  │  │  ├─ ProtectedRoute.tsx
@@ -56,14 +60,16 @@ GabAI
 │  │  ├─ pages
 │  │  │  ├─ Auth
 │  │  │  │  ├─ ForgotPassword.tsx
-│  │  │  │  ├─ Home.tsx
 │  │  │  │  ├─ Login.tsx
 │  │  │  │  ├─ Register.tsx
 │  │  │  │  ├─ ResetPassword.tsx
 │  │  │  │  ├─ VerifyEmail.tsx
 │  │  │  │  └─ VerifyOtp.tsx
-│  │  │  ├─ Home.tsx
-│  │  │  └─ Profile.tsx
+│  │  │  ├─ FeedPage.tsx
+│  │  │  ├─ MapPage.tsx
+│  │  │  ├─ ProfilePage.tsx
+│  │  │  ├─ ReportPage.tsx
+│  │  │  └─ SosPage.tsx
 │  │  └─ types
 │  │     └─ ticket.ts
 │  ├─ tailwind.config.js
