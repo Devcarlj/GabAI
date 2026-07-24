@@ -65,15 +65,22 @@ app.use((req: Request, res: Response) => {
   res.status(404).json({ error: `Cannot ${req.method} ${req.originalUrl} - Route not found` });
 });
 
-// 6. Connect to DB and Start Listening
+// 6. Connect to DB as an independent background task
 mongoose
   .connect(MONGODB_URI)
   .then(() => {
     console.log('✅ Connected to MongoDB successfully!');
-    app.listen(Number(port), "0.0.0.0", () => {
-      console.log(`🚀 Server running on http://localhost:${port}`);
-    });
   })
   .catch((err) => {
     console.error('❌ MongoDB Connection Error:', err);
   });
+
+
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(Number(port), "0.0.0.0", () => {
+    console.log(`🚀 Server running on http://localhost:${port}`);
+  });
+}
+
+
+export default app;
