@@ -16,14 +16,30 @@ if (!MONGODB_URI) {
   process.exit(1);
 }
 
-// 1. Precise CORS Configuration
-const allowedOrigins = process.env.FRONTEND_URL
+// 1. CORS — allow localhost plus LAN/private-network dev origins
+const isProduction = process.env.NODE_ENV === "production";
+const configuredOrigins = process.env.FRONTEND_URL
   ? process.env.FRONTEND_URL.split(",").map((o) => o.trim()).filter(Boolean)
   : ["http://localhost:5173", "http://127.0.0.1:5173"];
 
+const localDevOriginPattern =
+  /^https?:\/\/(localhost|127\.0\.0\.1|192\.168\.\d{1,3}\.\d{1,3}|10\.\d{1,3}\.\d{1,3}\.\d{1,3})(:\d+)?$/;
+
+function isAllowedOrigin(origin: string | undefined): boolean {
+  if (!origin) return true;
+  if (configuredOrigins.includes(origin)) return true;
+  return !isProduction && localDevOriginPattern.test(origin);
+}
+
 app.use(
   cors({
-    origin: allowedOrigins,
+    origin(origin, callback) {
+      if (isAllowedOrigin(origin)) {
+        callback(null, origin ?? true);
+      } else {
+        callback(new Error(`CORS blocked origin: ${origin}`));
+      }
+    },
     credentials: true,
   })
 );
@@ -54,7 +70,7 @@ mongoose
   .connect(MONGODB_URI)
   .then(() => {
     console.log('✅ Connected to MongoDB successfully!');
-    app.listen(port, () => {
+    app.listen(Number(port), "0.0.0.0", () => {
       console.log(`🚀 Server running on http://localhost:${port}`);
     });
   })
