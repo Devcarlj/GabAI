@@ -16,6 +16,8 @@ if (!MONGODB_URI) {
   process.exit(1);
 }
 
+
+
 // 1. CORS — allow localhost plus LAN/private-network dev origins
 const isProduction = process.env.NODE_ENV === "production";
 const configuredOrigins = process.env.FRONTEND_URL
@@ -82,5 +84,33 @@ if (process.env.NODE_ENV !== 'production') {
   });
 }
 
+
+let isConnected = false;
+
+async function connectToDatabase() {
+  if (isConnected) {
+    return;
+  }
+  try {
+    const db = await mongoose.connect(MONGODB_URI!);
+    isConnected = db.connections[0].readyState === 1;
+    console.log('✅ Connected to MongoDB successfully!');
+  } catch (err) {
+    console.error('❌ MongoDB Connection Error:', err);
+    throw err;
+  }
+}
+
+
+connectToDatabase();
+
+app.use(async (req, res, next) => {
+  try {
+    await connectToDatabase();
+    next();
+  } catch (error) {
+    res.status(500).json({ error: "Database connection failed" });
+  }
+});
 
 export default app;
