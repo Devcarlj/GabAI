@@ -16,6 +16,17 @@ interface JwtPayload {
     id: string;
 }
 
+const isProduction = process.env.NODE_ENV === 'production';
+
+function getCookieOptions(maxAge?: number) {
+    return {
+        httpOnly: true,
+        secure: isProduction,
+        sameSite: (isProduction ? 'none' : 'lax') as 'none' | 'lax',
+        ...(maxAge !== undefined ? { maxAge } : {}),
+    };
+}
+
 async function getEmailSettings(): Promise<any> {
     let settings = await EmailSettingsModel.findOne({});
     return settings || {};
@@ -164,12 +175,7 @@ export async function loginController(request: Request, response: Response): Pro
             last_login_date: new Date()
         });
 
-        const cookieOptions = {
-            httpOnly: true,
-            secure: true,
-            sameSite: "none" as const,
-            maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
-        };
+        const cookieOptions = getCookieOptions(7 * 24 * 60 * 60 * 1000);
 
         response.cookie('accessToken', accessToken, cookieOptions);
         response.cookie('refreshToken', refreshToken, cookieOptions);
@@ -195,11 +201,7 @@ export async function logoutController(request: Request, response: Response): Pr
     try {
         const userId = request.userId;
 
-        const cookieOptions = {
-            httpOnly: true,
-            secure: true,
-            sameSite: "none" as const
-        };
+        const cookieOptions = getCookieOptions();
 
         response.clearCookie("accessToken", cookieOptions);
         response.clearCookie("refreshToken", cookieOptions);
@@ -486,12 +488,7 @@ export async function refreshToken(request: Request, response: Response): Promis
 
         const newAccessToken = await generatedAccessToken(verifyToken.id);
 
-        const cookieOptions = {
-            httpOnly: true,
-            secure: true,
-            sameSite: "none" as const,
-            maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
-        };
+        const cookieOptions = getCookieOptions(7 * 24 * 60 * 60 * 1000);
 
         response.cookie('accessToken', newAccessToken, cookieOptions);
 

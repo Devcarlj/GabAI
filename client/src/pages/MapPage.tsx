@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import axiosInstance from '../api/axiosInstance';
 import { Link, useNavigate } from 'react-router-dom';
 import type { Ticket } from '../types/ticket';
 import { IncidentDetailCard } from '../components/IncidentDetailCard';
@@ -384,7 +384,7 @@ const handleCloseMobileDetail = () => {
     let isMounted = true;
     const fetchInitialTickets = async () => {
       try {
-        const response = await axios.get<Ticket[]>('/api/tickets');
+        const response = await axiosInstance.get<Ticket[]>('/tickets');
         if (!isMounted) return;
         setTickets(response.data);
         if (response.data.length > 0) {
@@ -416,7 +416,7 @@ const handleCloseMobileDetail = () => {
     if (!inputText.trim()) return;
     setLoading(true);
     try {
-      const response = await axios.post<Ticket>('/api/tickets', {
+      const response = await axiosInstance.post<Ticket>('/tickets', {
       rawText: inputText,
       photoUrl: photo || '',
       incidentType,
