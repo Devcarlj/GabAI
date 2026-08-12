@@ -1,3 +1,4 @@
+<img width="1920" height="1080" alt="gabai" src="https://github.com/user-attachments/assets/1fbff60d-11a7-4609-9902-addbdc1841c2" />
 
 # 🚀 GabAIyan Application - Local Setup Guide
 
