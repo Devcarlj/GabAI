@@ -1,50 +1,60 @@
-import React, { useState, useEffect } from 'react';
-import axiosInstance from '../api/axiosInstance';
-import { Link, useNavigate } from 'react-router-dom';
-import type { Ticket } from '../types/ticket';
-import { IncidentDetailCard } from '../components/IncidentDetailCard';
-import { LGUDetailCard } from '../components/LGUdetailcard';
-import { NavbarHeader } from '../components/NavbarHeader';
-import { MapViewSection } from '../components/MapViewSection';
-import { ActiveTriageFeed } from '../components/ActiveTriageFeed';
-import { fetchReverseGeocode } from '../api/geocode';
-import { SubmissionForm } from '../components/SubmissionForm';
+import React, { useState, useEffect, Suspense, lazy } from 'react';
+import axiosInstance from "../api/axiosInstance";
+import { Link, useNavigate } from "react-router-dom";
+import type { Ticket } from "../types/ticket";
+import { IncidentDetailCard } from "../components/IncidentDetailCard";
+import { LGUDetailCard } from "../components/LGUdetailcard";
+import { NavbarHeader } from "../components/NavbarHeader";
+import { ActiveTriageFeed } from "../components/ActiveTriageFeed";
+import { fetchReverseGeocode } from "../api/geocode";
+import { SubmissionForm } from "../components/SubmissionForm";
 /* import { MobileSubmissionBar } from '../components/MobileSubmissionBar';*/
-import type { NearbyLGU, NearbyLGUStatus } from '../types/ticket';
-import { fetchNearbyLGUs } from '../api/nearbyLgus';
-import type { IncidentType } from '../types/ticket';
-import { GpsPermissionModal } from '../components/GpsPermissionModal';
-import { MobileNavBar } from '../components/MobileNavBar';
-import { MobileHazardLegend } from '../components/MobileHazardLegend';
-import { MobileMapOverlay } from '../components/MobileMapOverlay';
-import { MobileIncidentCard } from '../components/MobileIncidentCard';
+import type { NearbyLGU, NearbyLGUStatus } from "../types/ticket";
+import { fetchNearbyLGUs } from "../api/nearbyLgus";
+import type { IncidentType } from "../types/ticket";
+import { GpsPermissionModal } from "../components/GpsPermissionModal";
+import { MobileNavBar } from "../components/MobileNavBar";
+import { MobileHazardLegend } from "../components/MobileHazardLegend";
+import { MobileMapOverlay } from "../components/MobileMapOverlay";
+import { MobileIncidentCard } from "../components/MobileIncidentCard";
+
+const MapViewSection = lazy(() => import('../components/MapViewSection').then(m => ({ default: m.MapViewSection })));
 
 
-const MetricCards: React.FC<{ tickets: Ticket[]; compact?: boolean }> = ({ tickets, compact }) => {
+const MetricCards: React.FC<{ tickets: Ticket[]; compact?: boolean }> = ({
+  tickets,
+  compact,
+}) => {
   const cardClass = compact
-    ? 'mobile-metric-card bg-[var(--theme-surface)] border border-slate-900 flex flex-col justify-between'
-    : 'bg-[var(--theme-surface)] border border-slate-900 rounded-xl p-2.5 flex flex-col justify-between';
+    ? "mobile-metric-card bg-[var(--theme-surface)] border border-slate-900 flex flex-col justify-between"
+    : "bg-[var(--theme-surface)] border border-slate-900 rounded-xl p-2.5 flex flex-col justify-between";
 
   const labelClass = compact
-    ? 'text-[7px] font-bold tracking-wider text-slate-500 uppercase'
-    : 'text-[9px] font-bold tracking-wider text-slate-500 uppercase';
+    ? "text-[7px] font-bold tracking-wider text-slate-500 uppercase"
+    : "text-[9px] font-bold tracking-wider text-slate-500 uppercase";
 
   const valueClass = compact
-    ? 'text-base font-bold tracking-tight leading-none mt-0.5'
-    : 'text-xl font-bold tracking-tight leading-none mt-1';
+    ? "text-base font-bold tracking-tight leading-none mt-0.5"
+    : "text-xl font-bold tracking-tight leading-none mt-1";
 
   return (
     <>
       <div className={cardClass}>
         <span className={labelClass}>Active Tickets</span>
-        <span className={`${valueClass} text-[var(--theme-accent)]`}>{tickets.length || 14}</span>
+        <span className={`${valueClass} text-[var(--theme-accent)]`}>
+          {tickets.length || 14}
+        </span>
       </div>
 
       <div className={cardClass}>
         <span className={labelClass}>High Priority</span>
         <div className="flex items-end justify-between mt-0.5">
           <span className={`${valueClass} text-red-500`}>
-            {tickets.filter(t => t.aiAnalysis?.urgency === 'CRITICAL' || t.aiAnalysis?.urgency === 'HIGH').length || 3}
+            {tickets.filter(
+              (t) =>
+                t.aiAnalysis?.urgency === "CRITICAL" ||
+                t.aiAnalysis?.urgency === "HIGH",
+            ).length || 3}
           </span>
           {!compact && (
             <div className="flex items-end gap-0.5 h-4">
@@ -73,9 +83,18 @@ const MetricCards: React.FC<{ tickets: Ticket[]; compact?: boolean }> = ({ ticke
 
       <div className={cardClass}>
         <span className={labelClass}>Past Trend Matrix</span>
-        <div className={`relative ${compact ? 'h-3' : 'h-5'} w-full mt-0.5`}>
-          <svg className="w-full h-full" viewBox="0 0 100 30" preserveAspectRatio="none">
-            <path d="M0,25 Q15,5 30,20 T60,10 T90,22 T100,15" fill="none" stroke="var(--theme-accent)" strokeWidth="1.5" />
+        <div className={`relative ${compact ? "h-3" : "h-5"} w-full mt-0.5`}>
+          <svg
+            className="w-full h-full"
+            viewBox="0 0 100 30"
+            preserveAspectRatio="none"
+          >
+            <path
+              d="M0,25 Q15,5 30,20 T60,10 T90,22 T100,15"
+              fill="none"
+              stroke="var(--theme-accent)"
+              strokeWidth="1.5"
+            />
           </svg>
         </div>
       </div>
@@ -97,7 +116,11 @@ const MetricCards: React.FC<{ tickets: Ticket[]; compact?: boolean }> = ({ ticke
       <div className={cardClass}>
         <span className={labelClass}>SDG IMPACT (Weekly)</span>
         <div className="flex items-center justify-between mt-0.5">
-          <span className={`${compact ? 'text-sm' : 'text-lg'} font-bold text-emerald-400 tracking-tight leading-none`}>75%</span>
+          <span
+            className={`${compact ? "text-sm" : "text-lg"} font-bold text-emerald-400 tracking-tight leading-none`}
+          >
+            75%
+          </span>
           <span className="text-[7px] text-slate-500">Flood Redux</span>
         </div>
       </div>
@@ -105,28 +128,56 @@ const MetricCards: React.FC<{ tickets: Ticket[]; compact?: boolean }> = ({ ticke
   );
 };
 
-const SidebarNavLinks: React.FC<{ onNavigate?: () => void }> = ({ onNavigate }) => (
+const SidebarNavLinks: React.FC<{ onNavigate?: () => void }> = ({
+  onNavigate,
+}) => (
   <nav className="flex flex-col gap-1 p-4">
     <Link
       to="/"
       onClick={onNavigate}
       className="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-[var(--theme-accent-subtle)] text-[var(--theme-accent)] border border-[var(--theme-accent)]/20"
     >
-      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.707.707a1 1 0 001.414-1.414l-7-7z" /></svg>
+      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.707.707a1 1 0 001.414-1.414l-7-7z" />
+      </svg>
       <span className="text-xs font-semibold tracking-wide">Home</span>
     </Link>
     <button
       onClick={onNavigate}
       className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-900/50 transition-colors cursor-pointer"
     >
-      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+      <svg
+        className="w-4 h-4"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
+        />
+      </svg>
       <span className="text-xs font-semibold tracking-wide">Directory</span>
     </button>
     <button
       onClick={onNavigate}
       className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-900/50 transition-colors cursor-pointer"
     >
-      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+      <svg
+        className="w-4 h-4"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+        />
+      </svg>
       <span className="text-xs font-semibold tracking-wide">Reports</span>
     </button>
     <Link
@@ -134,8 +185,18 @@ const SidebarNavLinks: React.FC<{ onNavigate?: () => void }> = ({ onNavigate }) 
       onClick={onNavigate}
       className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-brand-teal hover:bg-slate-900/50 transition-colors"
     >
-      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+      <svg
+        className="w-4 h-4"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+        />
       </svg>
       <span className="text-xs font-semibold tracking-wide">Login</span>
     </Link>
@@ -143,13 +204,24 @@ const SidebarNavLinks: React.FC<{ onNavigate?: () => void }> = ({ onNavigate }) 
 );
 
 export const Home: React.FC = () => {
-  const [incidentType, setIncidentType] = useState<IncidentType>('WARNING');
+  // Add state to track idle mounting
+  const [isMapReady, setIsMapReady] = useState(false);
+
+  useEffect(() => {
+    // Defer map evaluation until after the initial DOM has painted
+    const timer = setTimeout(() => setIsMapReady(true), 150);
+    return () => clearTimeout(timer);
+  }, []);
+
+  const [incidentType, setIncidentType] = useState<IncidentType>("WARNING");
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
-  const [inputText, setInputText] = useState<string>('');
+  const [inputText, setInputText] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
   const [photo, setPhoto] = useState<string | null>(null);
-  const [activeRightPanel, setActiveRightPanel] = useState<'submission' | 'detail' | 'lgu'>('submission');
+  const [activeRightPanel, setActiveRightPanel] = useState<
+    "submission" | "detail" | "lgu"
+  >("submission");
   const [isRightPanelOpen, setIsRightPanelOpen] = useState<boolean>(true);
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState<boolean>(false);
   const [isMobileDetailOpen, setIsMobileDetailOpen] = useState<boolean>(false);
@@ -157,213 +229,221 @@ export const Home: React.FC = () => {
   const isClosingRef = React.useRef<boolean>(false);
 
   // Place with your other state hooks in Home.tsx
-const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
-const [isGpsActive, setIsGpsActive] = useState<boolean>(false);
-const [gpsLoading, setGpsLoading] = useState<boolean>(false);
-const [locationLabel, setLocationLabel] = useState<string | null>(null);
+  const [userLocation, setUserLocation] = useState<{
+    lat: number;
+    lng: number;
+  } | null>(null);
+  const [isGpsActive, setIsGpsActive] = useState<boolean>(false);
+  const [gpsLoading, setGpsLoading] = useState<boolean>(false);
+  const [locationLabel, setLocationLabel] = useState<string | null>(null);
 
-const watchIdRef = React.useRef<number | null>(null);
-const lastGeocodeRef = React.useRef<{ lat: number; lng: number } | null>(null);
+  const watchIdRef = React.useRef<number | null>(null);
+  const lastGeocodeRef = React.useRef<{ lat: number; lng: number } | null>(
+    null,
+  );
 
-// Nearby-LGU state — lives here because it's shared between IncidentDetailCard
-// (button + status) and MapViewSection (pins + camera framing), which are siblings.
-const [nearbyLGUs, setNearbyLGUs] = useState<NearbyLGU[]>([]);
-const [nearbyLGUsStatus, setNearbyLGUsStatus] = useState<NearbyLGUStatus>('idle');
-const [showNearLGUs, setShowNearLGUs] = useState<boolean>(false);
-const [selectedLGU, setSelectedLGU] = useState<NearbyLGU | null>(null);
-const [isMobileLguOpen, setIsMobileLguOpen] = useState<boolean>(false);
-const pollTimeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Nearby-LGU state — lives here because it's shared between IncidentDetailCard
+  // (button + status) and MapViewSection (pins + camera framing), which are siblings.
+  const [nearbyLGUs, setNearbyLGUs] = useState<NearbyLGU[]>([]);
+  const [nearbyLGUsStatus, setNearbyLGUsStatus] =
+    useState<NearbyLGUStatus>("idle");
+  const [showNearLGUs, setShowNearLGUs] = useState<boolean>(false);
+  const [selectedLGU, setSelectedLGU] = useState<NearbyLGU | null>(null);
+  const [isMobileLguOpen, setIsMobileLguOpen] = useState<boolean>(false);
+  const pollTimeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
 
-const clearNearLGUs = () => {
-  if (pollTimeoutRef.current) {
-    clearTimeout(pollTimeoutRef.current);
-    pollTimeoutRef.current = null;
-  }
-  setShowNearLGUs(false);
-  setNearbyLGUs([]);
-  setNearbyLGUsStatus('idle');
-  setSelectedLGU(null);
-  setIsMobileLguOpen(false);
-  setActiveRightPanel((current) => (current === 'lgu' ? 'detail' : current));
-};
+  const clearNearLGUs = () => {
+    if (pollTimeoutRef.current) {
+      clearTimeout(pollTimeoutRef.current);
+      pollTimeoutRef.current = null;
+    }
+    setShowNearLGUs(false);
+    setNearbyLGUs([]);
+    setNearbyLGUsStatus("idle");
+    setSelectedLGU(null);
+    setIsMobileLguOpen(false);
+    setActiveRightPanel((current) => (current === "lgu" ? "detail" : current));
+  };
 
-const pollNearbyLGUs = async (ticketId: string) => {
-  try {
-    const { status, lgus } = await fetchNearbyLGUs(ticketId);
-    setNearbyLGUsStatus(status);
-    if (status === 'ready') {
-      setNearbyLGUs(lgus);
+  const pollNearbyLGUs = async (ticketId: string) => {
+    try {
+      const { status, lgus } = await fetchNearbyLGUs(ticketId);
+      setNearbyLGUsStatus(status);
+      if (status === "ready") {
+        setNearbyLGUs(lgus);
+        return;
+      }
+      if (status === "failed") return;
+      // still pending (or the background job hasn't started writing yet) — keep polling
+      pollTimeoutRef.current = setTimeout(() => pollNearbyLGUs(ticketId), 2000);
+    } catch (err) {
+      console.error("Failed to poll nearby LGUs:", err);
+      setNearbyLGUsStatus("failed");
+    }
+  };
+
+  const handleToggleNearLGUs = () => {
+    if (!selectedTicket?._id) return;
+    if (showNearLGUs) {
+      clearNearLGUs();
       return;
     }
-    if (status === 'failed') return;
-    // still pending (or the background job hasn't started writing yet) — keep polling
-    pollTimeoutRef.current = setTimeout(() => pollNearbyLGUs(ticketId), 2000);
-  } catch (err) {
-    console.error('Failed to poll nearby LGUs:', err);
-    setNearbyLGUsStatus('failed');
-  }
-};
-
-const handleToggleNearLGUs = () => {
-  if (!selectedTicket?._id) return;
-  if (showNearLGUs) {
-    clearNearLGUs();
-    return;
-  }
-  setShowNearLGUs(true);
-  setNearbyLGUsStatus('pending');
-  void pollNearbyLGUs(selectedTicket._id);
-};
-
-const handleSelectLGU = (lgu: NearbyLGU) => {
-  setSelectedLGU(lgu);
-  setActiveRightPanel('lgu');
-  setIsRightPanelOpen(true);
-
-  const isMobile = window.matchMedia('(max-width: 1023px)').matches;
-  if (isMobile) {
-    setIsMobileLguOpen(true);
-  }
-};
-
-const handleBackToIncident = () => {
-  setActiveRightPanel('detail');
-  setIsMobileLguOpen(false);
-};
-
-const handleCloseMobileLgu = () => {
-  setIsMobileLguOpen(false);
-};
-
-// Stop polling if the component unmounts mid-flight
-useEffect(() => {
-  return () => {
-    if (pollTimeoutRef.current) clearTimeout(pollTimeoutRef.current);
+    setShowNearLGUs(true);
+    setNearbyLGUsStatus("pending");
+    void pollNearbyLGUs(selectedTicket._id);
   };
-}, []);
 
-// Turns raw coordinates into a readable address, e.g. "Gen. T. de Leon, Valenzuela City"
-// via our own /api/geocode proxy (see server/controllers/geocodeController.ts) — keeps the
-// Nominatim User-Agent requirement and rate limiting server-side instead of in the browser.
-const reverseGeocode = async (lat: number, lng: number) => {
-  const label = await fetchReverseGeocode(lat, lng);
-  // Non-fatal on failure — fetchReverseGeocode resolves to null and the UI falls
-  // back to raw lat/lng; ticket submission is unaffected either way.
-  setLocationLabel(label);
-};
+  const handleSelectLGU = (lgu: NearbyLGU) => {
+    setSelectedLGU(lgu);
+    setActiveRightPanel("lgu");
+    setIsRightPanelOpen(true);
 
-// Only re-geocode once the user has actually moved a meaningful distance (~40m),
-// so a live watchPosition feed doesn't hammer the geocoding API on every tick.
-const maybeReverseGeocode = (lat: number, lng: number) => {
-  const last = lastGeocodeRef.current;
-  if (last) {
-    const dLat = lat - last.lat;
-    const dLng = lng - last.lng;
-    const approxMeters = Math.sqrt(dLat * dLat + dLng * dLng) * 111000;
-    if (approxMeters < 40) return;
-  }
-  lastGeocodeRef.current = { lat, lng };
-  void reverseGeocode(lat, lng);
-};
-
-const handleToggleGps = () => {
-  if (isGpsActive) {
-    if (watchIdRef.current !== null) {
-      navigator.geolocation.clearWatch(watchIdRef.current);
-      watchIdRef.current = null;
+    const isMobile = window.matchMedia("(max-width: 1023px)").matches;
+    if (isMobile) {
+      setIsMobileLguOpen(true);
     }
-    setIsGpsActive(false);
-    setUserLocation(null);
-    setLocationLabel(null);
-    lastGeocodeRef.current = null;
-    return;
-  }
+  };
 
-  // Just open the modal here. 
-  setShowGpsModal(true);
-};
+  const handleBackToIncident = () => {
+    setActiveRightPanel("detail");
+    setIsMobileLguOpen(false);
+  };
 
-const handleConfirmGpsPermission = () => {
-  setShowGpsModal(false);
+  const handleCloseMobileLgu = () => {
+    setIsMobileLguOpen(false);
+  };
 
-  if (!navigator.geolocation) {
-    alert('Geolocation is not supported by your browser.');
-    return;
-  }
+  // Stop polling if the component unmounts mid-flight
+  useEffect(() => {
+    return () => {
+      if (pollTimeoutRef.current) clearTimeout(pollTimeoutRef.current);
+    };
+  }, []);
 
-  setGpsLoading(true);
-  
-  watchIdRef.current = navigator.geolocation.watchPosition(
-    (position) => {
-      const coords = {
-        lat: position.coords.latitude,
-        lng: position.coords.longitude,
-      };
-      setUserLocation(coords);
-      setIsGpsActive(true);
-      setGpsLoading(false);
-      maybeReverseGeocode(coords.lat, coords.lng);
-    },
-    (error) => {
-      console.error('Error obtaining location:', error);
-      alert('Unable to retrieve your location. Please check browser permissions.');
+  // Turns raw coordinates into a readable address, e.g. "Gen. T. de Leon, Valenzuela City"
+  // via our own /api/geocode proxy (see server/controllers/geocodeController.ts) — keeps the
+  // Nominatim User-Agent requirement and rate limiting server-side instead of in the browser.
+  const reverseGeocode = async (lat: number, lng: number) => {
+    const label = await fetchReverseGeocode(lat, lng);
+    // Non-fatal on failure — fetchReverseGeocode resolves to null and the UI falls
+    // back to raw lat/lng; ticket submission is unaffected either way.
+    setLocationLabel(label);
+  };
+
+  // Only re-geocode once the user has actually moved a meaningful distance (~40m),
+  // so a live watchPosition feed doesn't hammer the geocoding API on every tick.
+  const maybeReverseGeocode = (lat: number, lng: number) => {
+    const last = lastGeocodeRef.current;
+    if (last) {
+      const dLat = lat - last.lat;
+      const dLng = lng - last.lng;
+      const approxMeters = Math.sqrt(dLat * dLat + dLng * dLng) * 111000;
+      if (approxMeters < 40) return;
+    }
+    lastGeocodeRef.current = { lat, lng };
+    void reverseGeocode(lat, lng);
+  };
+
+  const handleToggleGps = () => {
+    if (isGpsActive) {
+      if (watchIdRef.current !== null) {
+        navigator.geolocation.clearWatch(watchIdRef.current);
+        watchIdRef.current = null;
+      }
       setIsGpsActive(false);
-      setGpsLoading(false);
-    },
-    { enableHighAccuracy: true, maximumAge: 5000, timeout: 15000 }
-  );
-};
+      setUserLocation(null);
+      setLocationLabel(null);
+      lastGeocodeRef.current = null;
+      return;
+    }
 
-// Stop watching GPS if the component unmounts while tracking is on
-useEffect(() => {
-  return () => {
-    if (watchIdRef.current !== null) {
-      navigator.geolocation.clearWatch(watchIdRef.current);
+    // Just open the modal here.
+    setShowGpsModal(true);
+  };
+
+  const handleConfirmGpsPermission = () => {
+    setShowGpsModal(false);
+
+    if (!navigator.geolocation) {
+      alert("Geolocation is not supported by your browser.");
+      return;
+    }
+
+    setGpsLoading(true);
+
+    watchIdRef.current = navigator.geolocation.watchPosition(
+      (position) => {
+        const coords = {
+          lat: position.coords.latitude,
+          lng: position.coords.longitude,
+        };
+        setUserLocation(coords);
+        setIsGpsActive(true);
+        setGpsLoading(false);
+        maybeReverseGeocode(coords.lat, coords.lng);
+      },
+      (error) => {
+        console.error("Error obtaining location:", error);
+        alert(
+          "Unable to retrieve your location. Please check browser permissions.",
+        );
+        setIsGpsActive(false);
+        setGpsLoading(false);
+      },
+      { enableHighAccuracy: true, maximumAge: 5000, timeout: 15000 },
+    );
+  };
+
+  // Stop watching GPS if the component unmounts while tracking is on
+  useEffect(() => {
+    return () => {
+      if (watchIdRef.current !== null) {
+        navigator.geolocation.clearWatch(watchIdRef.current);
+      }
+    };
+  }, []);
+
+  // 1. Selecting a ticket
+  const handleSelectTicket = (ticket: Ticket | null) => {
+    clearNearLGUs();
+    if (!ticket) {
+      // User unselected or closed ticket
+      setSelectedTicket(null);
+      setIsMobileDetailOpen(false);
+      return;
+    }
+
+    isClosingRef.current = false; // Reset close flag
+    setSelectedTicket(ticket);
+    setMapFocusKey((k) => k + 1);
+    setActiveRightPanel("detail");
+    setIsRightPanelOpen(true);
+
+    const isMobile = window.matchMedia("(max-width: 1023px)").matches;
+
+    // Open the card immediately on mobile while the map begins zooming
+    if (isMobile) {
+      setIsMobileDetailOpen(true);
     }
   };
-}, []);
 
+  // 2. Triggered when map fly-to finishes
+  const handleMapZoomComplete = () => {
+    const isMobile = window.matchMedia("(max-width: 1023px)").matches;
 
-// 1. Selecting a ticket
-const handleSelectTicket = (ticket: Ticket | null) => {
-  clearNearLGUs();
-  if (!ticket) {
-    // User unselected or closed ticket
-    setSelectedTicket(null);
+    // Keep closed if the user explicitly clicked the 'X' button during the flyTo animation
+    if (isMobile && selectedTicket && isClosingRef.current) {
+      setIsMobileDetailOpen(false);
+    }
+  };
+
+  // 3. Explicitly close the mobile detail card
+  const handleCloseMobileDetail = () => {
+    isClosingRef.current = true; // Block queued moveend callbacks from re-opening it
     setIsMobileDetailOpen(false);
-    return;
-  }
-
-  isClosingRef.current = false; // Reset close flag
-  setSelectedTicket(ticket);
-  setMapFocusKey((k) => k + 1);
-  setActiveRightPanel('detail');
-  setIsRightPanelOpen(true);
-
-  const isMobile = window.matchMedia('(max-width: 1023px)').matches;
-
-  // Open the card immediately on mobile while the map begins zooming
-  if (isMobile) {
-    setIsMobileDetailOpen(true);
-  }
-};
-
-
-// 2. Triggered when map fly-to finishes
-const handleMapZoomComplete = () => {
-  const isMobile = window.matchMedia('(max-width: 1023px)').matches;
-
-  // Keep closed if the user explicitly clicked the 'X' button during the flyTo animation
-  if (isMobile && selectedTicket && isClosingRef.current) {
-    setIsMobileDetailOpen(false);
-  }
-};
-
-// 3. Explicitly close the mobile detail card
-const handleCloseMobileDetail = () => {
-  isClosingRef.current = true; // Block queued moveend callbacks from re-opening it
-  setIsMobileDetailOpen(false);
-};
+  };
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -384,102 +464,150 @@ const handleCloseMobileDetail = () => {
     let isMounted = true;
     const fetchInitialTickets = async () => {
       try {
-        const response = await axiosInstance.get<Ticket[]>('/tickets');
+        const response = await axiosInstance.get<Ticket[]>("/tickets");
         if (!isMounted) return;
         setTickets(response.data);
         if (response.data.length > 0) {
           setSelectedTicket((current) => current ?? response.data[0]);
         }
       } catch (err) {
-        console.error('Error fetching tickets:', err);
+        console.error("Error fetching tickets:", err);
       }
     };
     void fetchInitialTickets();
-    return () => { isMounted = false; };
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   useEffect(() => {
-    const mediaQuery = window.matchMedia('(min-width: 1024px)');
+    const mediaQuery = window.matchMedia("(min-width: 1024px)");
     const closeOnDesktop = (event: MediaQueryListEvent | MediaQueryList) => {
       if (event.matches) {
         setIsMobileDetailOpen(false);
       }
     };
     closeOnDesktop(mediaQuery);
-    mediaQuery.addEventListener('change', closeOnDesktop);
-    return () => mediaQuery.removeEventListener('change', closeOnDesktop);
+    mediaQuery.addEventListener("change", closeOnDesktop);
+    return () => mediaQuery.removeEventListener("change", closeOnDesktop);
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
-    console.log('SUBMIT FIRED', { inputText, hasPhoto: !!photo, photoLength: photo?.length });
+    console.log("SUBMIT FIRED", {
+      inputText,
+      hasPhoto: !!photo,
+      photoLength: photo?.length,
+    });
     e.preventDefault();
     if (!inputText.trim()) return;
     setLoading(true);
     try {
-      const response = await axiosInstance.post<Ticket>('/tickets', {
-      rawText: inputText,
-      photoUrl: photo || '',
-      incidentType,
-      coordinates: userLocation ? { lat: userLocation.lat, lng: userLocation.lng } : undefined,
-      locationLabel: userLocation ? locationLabel || undefined : undefined,
-    });
+      const response = await axiosInstance.post<Ticket>("/tickets", {
+        rawText: inputText,
+        photoUrl: photo || "",
+        incidentType,
+        coordinates: userLocation
+          ? { lat: userLocation.lat, lng: userLocation.lng }
+          : undefined,
+        locationLabel: userLocation ? locationLabel || undefined : undefined,
+      });
       setTickets((prev) => [response.data, ...prev]);
       handleSelectTicket(response.data);
-      setInputText('');
+      setInputText("");
       setPhoto(null);
     } catch (err) {
-      console.error('Error submitting ticket:', err);
+      console.error("Error submitting ticket:", err);
     } finally {
       setLoading(false);
     }
   };
 
   const [showGpsModal, setShowGpsModal] = useState<boolean>(false);
-  const [mobileSearchValue, setMobileSearchValue] = useState<string>('');
-  const [mobileView, setMobileView] = useState<'map' | 'feed'>('map');
+  const [mobileSearchValue, setMobileSearchValue] = useState<string>("");
+  const [mobileView, setMobileView] = useState<"map" | "feed">("map");
   const navigate = useNavigate();
 
-const handleMobileNavClick = (id: string) => {
-  if (id === 'feed') {
-    navigate('/feed'); // <--- Redirect directly to FeedPage.tsx
-    return;
-  }
-  if (id === 'map') {
-    setMobileView('map');
-    return;
-  }
-  if (id === 'user') {
-    navigate('/profile');
-    return;
-  }
-  if (id === 'report') {
-    navigate('/report'); // or report page route
-    return;
-  }
-};
+  const handleMobileNavClick = (id: string) => {
+    if (id === "feed") {
+      navigate("/feed"); // <--- Redirect directly to FeedPage.tsx
+      return;
+    }
+    if (id === "map") {
+      setMobileView("map");
+      return;
+    }
+    if (id === "user") {
+      navigate("/profile");
+      return;
+    }
+    if (id === "report") {
+      navigate("/report"); // or report page route
+      return;
+    }
+  };
 
   const [isFilterFeedOpen, setIsFilterFeedOpen] = useState(false);
 
   return (
     <div className="flex h-dvh lg:h-screen bg-[var(--theme-bg)] text-slate-100 font-sans antialiased overflow-hidden select-none">
-
       {/* 1. LEFT SIDEBAR — desktop only */}
       <aside className="hidden lg:flex w-16 border-r border-slate-900 bg-[var(--theme-surface)] flex-col items-center py-4 justify-between shrink-0">
         <div className="flex flex-col items-center gap-5 w-full">
           <div className="p-2 text-slate-500 hover:text-slate-300 cursor-pointer">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 6h16M4 12h16M4 18h16"
+              />
+            </svg>
           </div>
 
-          <Link to="/" className="p-2.5 bg-[var(--theme-accent-subtle)] text-[var(--theme-accent)] border-l-2 border-[var(--theme-accent)] w-full flex justify-center cursor-pointer">
-            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.707.707a1 1 0 001.414-1.414l-7-7z" /></svg>
+          <Link
+            to="/"
+            className="p-2.5 bg-[var(--theme-accent-subtle)] text-[var(--theme-accent)] border-l-2 border-[var(--theme-accent)] w-full flex justify-center cursor-pointer"
+          >
+            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.707.707a1 1 0 001.414-1.414l-7-7z" />
+            </svg>
           </Link>
 
           <div className="p-2 text-slate-500 hover:text-slate-300 cursor-pointer">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
+              />
+            </svg>
           </div>
 
           <div className="p-2 text-slate-500 hover:text-slate-300 cursor-pointer">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+              />
+            </svg>
           </div>
         </div>
 
@@ -488,60 +616,81 @@ const handleMobileNavClick = (id: string) => {
           title="Operator Login"
           className="p-2 text-slate-500 hover:text-brand-teal transition-colors duration-200 cursor-pointer"
         >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+          <svg
+            className="w-5 h-5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+            />
           </svg>
         </Link>
       </aside>
 
       {/* MAIN LAYOUT WRAPPER */}
       <div className="flex-1 flex flex-col lg:p-4 lg:justify-between pb-18 lg:pb-0 overflow-hidden min-h-0">
-
         {/* 2. TOP NAVBAR */}
         <NavbarHeader onToggleDrawer={() => setIsMobileDrawerOpen(true)} />
 
         {/* THREE-COLUMN FIXED-HEIGHT WORKSPACE */}
         <div className="flex-1 flex flex-col lg:grid lg:grid-cols-3 gap-0 lg:gap-4 overflow-hidden items-stretch lg:mb-1 relative min-h-0">
-
           {/* COLUMN 1 & 2: GEO-MAP & KPI GRID */}
-          <div className={`${isRightPanelOpen ? 'lg:col-span-2' : 'lg:col-span-3'} flex flex-col gap-0 lg:gap-4 overflow-hidden h-full min-h-0 transition-all duration-300`}>
-
-            {/* GIS MAP CONTAINER — fills all remaining height below the navbar on mobile.
-                Hidden (not unmounted) when the mobile Feed tab is active, so map/GPS state
-                isn't lost switching tabs; always visible on desktop regardless of mobileView. */}
+          <div
+            className={`${isRightPanelOpen ? "lg:col-span-2" : "lg:col-span-3"} flex flex-col gap-0 lg:gap-4 overflow-hidden h-full min-h-0 transition-all duration-300`}
+          >
+            {/* GIS MAP CONTAINER */}
             <div
-              className={`${mobileView === 'feed' ? 'hidden' : 'flex'} lg:flex flex-1 min-h-60 lg:h-full relative bg-[var(--theme-surface-elevated)] rounded-none lg:rounded-2xl border-0 lg:border border-slate-900 overflow-hidden lg:min-h-0`}
+              className={`${mobileView === "feed" ? "hidden" : "flex"} lg:flex flex-1 min-h-60 lg:h-full relative bg-[var(--theme-surface-elevated)] rounded-none lg:rounded-2xl border-0 lg:border border-slate-900 overflow-hidden lg:min-h-0`}
             >
-              <MapViewSection
-                tickets={tickets}
-                selectedTicket={selectedTicket}
-                setSelectedTicket={handleSelectTicket}
-                focusKey={mapFocusKey}
-                userLocation={userLocation}
-                isGpsActive={isGpsActive}
-                gpsLoading={gpsLoading}
-                locationLabel={locationLabel}
-                onZoomComplete={handleMapZoomComplete}
-                nearbyLGUs={nearbyLGUs}
-                showNearLGUs={showNearLGUs}
-                onPhViewClick={clearNearLGUs}
-                onSelectLGU={handleSelectLGU}
-              />
+              {isMapReady ? (
+                <Suspense
+                  fallback={
+                    <div className="w-full h-full bg-slate-950 animate-pulse flex items-center justify-center font-mono text-xs text-slate-500">
+                      LOADING MAP ENGINE...
+                    </div>
+                  }
+                >
+                  <MapViewSection
+                    tickets={tickets}
+                    selectedTicket={selectedTicket}
+                    setSelectedTicket={handleSelectTicket}
+                    focusKey={mapFocusKey}
+                    userLocation={userLocation}
+                    isGpsActive={isGpsActive}
+                    gpsLoading={gpsLoading}
+                    locationLabel={locationLabel}
+                    onZoomComplete={handleMapZoomComplete}
+                    nearbyLGUs={nearbyLGUs}
+                    showNearLGUs={showNearLGUs}
+                    onPhViewClick={clearNearLGUs}
+                    onSelectLGU={handleSelectLGU}
+                  />
+                </Suspense>
+              ) : (
+                <div className="w-full h-full bg-slate-950 flex items-center justify-center font-mono text-xs text-slate-600">
+                  INITIALIZING...
+                </div>
+              )}
 
               {/* MOBILE: floating search bar + layer/filter/locate controls */}
               <MobileMapOverlay
                 searchValue={mobileSearchValue}
                 onSearchChange={setMobileSearchValue}
                 onLocateClick={handleToggleGps}
-                onFilterClick={() => setIsFilterFeedOpen(true)} // <--- Wire filter button
+                onFilterClick={() => setIsFilterFeedOpen(true)}
               />
 
-              {/* MOBILE: hazard level legend, replaces the old metrics row.
-                  Hidden while the incident overlay is open so the two don't collide. */}
-              {!(isMobileDetailOpen && selectedTicket) && <MobileHazardLegend />}
+              {/* MOBILE: hazard level legend */}
+              {!(isMobileDetailOpen && selectedTicket) && (
+                <MobileHazardLegend />
+              )}
 
-              {/* MOBILE: incident detail floats over the bottom of the map itself,
-                  instead of a separate full-screen sheet with a dim backdrop. */}
+              {/* MOBILE: incident detail overlay */}
               {isMobileDetailOpen && selectedTicket && (
                 <div className="lg:hidden absolute bottom-0 left-0 right-0 z-30 max-h-[75%] overflow-y-auto bg-[var(--theme-surface)]/97 backdrop-blur-sm border-t border-slate-800 rounded-t-2xl shadow-[0_-8px_30px_rgba(0,0,0,0.5)] px-4 pt-3 pb-[calc(env(safe-area-inset-bottom)+16px)]">
                   <MobileIncidentCard
@@ -550,7 +699,7 @@ const handleMobileNavClick = (id: string) => {
                     showNearLGUs={showNearLGUs}
                     nearbyLGUsStatus={nearbyLGUsStatus}
                     onToggleNearLGUs={handleToggleNearLGUs}
-                    onClose={handleCloseMobileDetail} // Updated to block re-opening
+                    onClose={handleCloseMobileDetail}
                   />
                 </div>
               )}
@@ -558,14 +707,14 @@ const handleMobileNavClick = (id: string) => {
 
             {/* MOBILE: full-height Feed tab — replaces the map area entirely,
                 only shown when the bottom nav's Feed tab is active */}
-            {mobileView === 'feed' && (
+            {mobileView === "feed" && (
               <div className="lg:hidden flex-1 min-h-0 overflow-y-auto px-3 py-3">
                 <ActiveTriageFeed
                   tickets={tickets}
                   selectedTicketId={selectedTicket?._id || null}
                   onSelectTicket={(t) => {
                     handleSelectTicket(t);
-                    setMobileView('map'); // jump back to the map so the pin + detail sheet are visible
+                    setMobileView("map"); // jump back to the map so the pin + detail sheet are visible
                   }}
                 />
               </div>
@@ -580,26 +729,27 @@ const handleMobileNavClick = (id: string) => {
           {/* COLUMN 3: RIGHT SIDEBAR — desktop only */}
           {isRightPanelOpen ? (
             <div className="hidden lg:flex lg:col-span-1 flex-col overflow-hidden h-full min-h-0 bg-[var(--theme-surface)] rounded-2xl border border-slate-900 shadow-xl transition-all duration-300">
-
               <div className="flex items-center justify-between border-b border-slate-900 p-3 bg-slate-950/20 shrink-0">
                 <div className="flex gap-1">
                   <button
-                    onClick={() => setActiveRightPanel('submission')}
+                    onClick={() => setActiveRightPanel("submission")}
                     className={`px-3 py-1.5 rounded-lg font-mono text-[10px] font-bold tracking-wider uppercase transition-all duration-200 cursor-pointer ${
-                      activeRightPanel === 'submission'
-                        ? 'bg-[var(--theme-accent-subtle)] text-[var(--theme-accent)] border border-[var(--theme-border-accent)]'
-                        : 'text-slate-400 hover:text-slate-200 border border-transparent'
+                      activeRightPanel === "submission"
+                        ? "bg-[var(--theme-accent-subtle)] text-[var(--theme-accent)] border border-[var(--theme-border-accent)]"
+                        : "text-slate-400 hover:text-slate-200 border border-transparent"
                     }`}
                   >
                     Submission
                   </button>
                   <button
-                    onClick={() => selectedTicket && setActiveRightPanel('detail')}
+                    onClick={() =>
+                      selectedTicket && setActiveRightPanel("detail")
+                    }
                     disabled={!selectedTicket}
                     className={`px-3 py-1.5 rounded-lg font-mono text-[10px] font-bold tracking-wider uppercase transition-all duration-200 cursor-pointer ${
-                      activeRightPanel === 'detail'
-                        ? 'bg-[var(--theme-accent-subtle)] text-[var(--theme-accent)] border border-[var(--theme-border-accent)]'
-                        : 'text-slate-500 hover:text-slate-350 border border-transparent disabled:opacity-30 disabled:cursor-not-allowed'
+                      activeRightPanel === "detail"
+                        ? "bg-[var(--theme-accent-subtle)] text-[var(--theme-accent)] border border-[var(--theme-border-accent)]"
+                        : "text-slate-500 hover:text-slate-350 border border-transparent disabled:opacity-30 disabled:cursor-not-allowed"
                     }`}
                   >
                     Incident Detail
@@ -611,35 +761,48 @@ const handleMobileNavClick = (id: string) => {
                   className="p-1.5 text-slate-500 hover:text-slate-300 hover:bg-slate-900/50 rounded-lg transition-all duration-200 cursor-pointer"
                   title="Close Sidebar"
                 >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
                   </svg>
                 </button>
               </div>
 
               <div className="flex-1 overflow-y-auto p-4 min-h-0 flex flex-col justify-between">
-                {activeRightPanel === 'submission' ? (
-                <SubmissionForm
-                  inputText={inputText}
-                  setInputText={setInputText}
-                  photo={photo}
-                  loading={loading}
-                  isGpsActive={isGpsActive}
-                  gpsLoading={gpsLoading}
-                  userLocation={userLocation}
-                  locationLabel={locationLabel}
-                  incidentType={incidentType}          
-                  setIncidentType={setIncidentType}      
-                  onToggleGps={handleToggleGps}
-                  onPhotoChange={handlePhotoChange}
-                  onRemovePhoto={handleRemovePhoto}
-                  onSubmit={handleSubmit}
-                />
-              ) : activeRightPanel === 'lgu' ? (
-                <div className="h-full">
-                  <LGUDetailCard lgu={selectedLGU} onBack={handleBackToIncident} />
-                </div>
-              ) : (
+                {activeRightPanel === "submission" ? (
+                  <SubmissionForm
+                    inputText={inputText}
+                    setInputText={setInputText}
+                    photo={photo}
+                    loading={loading}
+                    isGpsActive={isGpsActive}
+                    gpsLoading={gpsLoading}
+                    userLocation={userLocation}
+                    locationLabel={locationLabel}
+                    incidentType={incidentType}
+                    setIncidentType={setIncidentType}
+                    onToggleGps={handleToggleGps}
+                    onPhotoChange={handlePhotoChange}
+                    onRemovePhoto={handleRemovePhoto}
+                    onSubmit={handleSubmit}
+                  />
+                ) : activeRightPanel === "lgu" ? (
+                  <div className="h-full">
+                    <LGUDetailCard
+                      lgu={selectedLGU}
+                      onBack={handleBackToIncident}
+                    />
+                  </div>
+                ) : (
                   <div className="h-full">
                     <IncidentDetailCard
                       ticket={selectedTicket}
@@ -657,13 +820,22 @@ const handleMobileNavClick = (id: string) => {
               className="hidden lg:flex absolute right-4 top-4 z-20 bg-[var(--theme-surface)]/95 hover:bg-slate-900 border border-slate-800 text-[var(--theme-accent)] p-2.5 rounded-xl shadow-2xl hover:text-[var(--theme-accent-hover)] transition-all duration-200 cursor-pointer items-center gap-1.5 group font-mono text-[10px] font-bold tracking-wider"
               title="Open Triage Panel"
             >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M11 19l-7-7 7-7m8 14l-7-7 7-7"
+                />
               </svg>
               <span>OPEN PANEL</span>
             </button>
           )}
-
         </div>
       </div>
 
@@ -683,13 +855,14 @@ const handleMobileNavClick = (id: string) => {
         onSubmit={handleSubmit}
       />*/}
 
-
       {/* Mobile Filter / Triage Feed Modal */}
       {isFilterFeedOpen && (
         <div className="lg:hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex flex-col p-4">
           <div className="flex justify-between items-center mb-3">
-            <h3 className="font-mono text-xs font-bold text-[var(--theme-accent)]">INCIDENT FILTER & FEED</h3>
-            <button 
+            <h3 className="font-mono text-xs font-bold text-[var(--theme-accent)]">
+              INCIDENT FILTER & FEED
+            </h3>
+            <button
               onClick={() => setIsFilterFeedOpen(false)}
               className="text-slate-400 hover:text-white text-sm"
             >
@@ -719,14 +892,26 @@ const handleMobileNavClick = (id: string) => {
           />
           <div className="lg:hidden mobile-drawer-panel flex flex-col">
             <div className="flex items-center justify-between p-4 border-b border-slate-900">
-              <span className="text-xs font-bold tracking-wider text-slate-300">GABAI</span>
+              <span className="text-xs font-bold tracking-wider text-slate-300">
+                GABAI
+              </span>
               <button
                 onClick={() => setIsMobileDrawerOpen(false)}
                 className="p-1.5 text-slate-500 hover:text-slate-300 transition-colors cursor-pointer"
                 aria-label="Close menu"
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
                 </svg>
               </button>
             </div>
@@ -735,43 +920,53 @@ const handleMobileNavClick = (id: string) => {
         </>
       )}
 
-        {/* MOBILE ONLY: LGU detail bottom sheet */}
-        {isMobileLguOpen && selectedLGU && (
-          <>
-            <div
-              className="lg:hidden mobile-bottom-sheet-backdrop"
-              onClick={handleCloseMobileLgu}
-              aria-hidden="true"
-            />
-            <div className="lg:hidden mobile-bottom-sheet">
-              <div className="flex items-center justify-between px-4 py-3 border-b border-slate-900 shrink-0">
-                <span className="text-[10px] font-bold tracking-wider text-slate-400 uppercase font-mono">
-                  LGU Details
-                </span>
-                <button
-                  onClick={handleCloseMobileLgu}
-                  className="p-1.5 text-slate-500 hover:text-slate-300 transition-colors cursor-pointer"
-                  aria-label="Close LGU detail"
+      {/* MOBILE ONLY: LGU detail bottom sheet */}
+      {isMobileLguOpen && selectedLGU && (
+        <>
+          <div
+            className="lg:hidden mobile-bottom-sheet-backdrop"
+            onClick={handleCloseMobileLgu}
+            aria-hidden="true"
+          />
+          <div className="lg:hidden mobile-bottom-sheet">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-slate-900 shrink-0">
+              <span className="text-[10px] font-bold tracking-wider text-slate-400 uppercase font-mono">
+                LGU Details
+              </span>
+              <button
+                onClick={handleCloseMobileLgu}
+                className="p-1.5 text-slate-500 hover:text-slate-300 transition-colors cursor-pointer"
+                aria-label="Close LGU detail"
+              >
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
                 >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
-              <div className="flex-1 overflow-y-auto p-4 min-h-0">
-                <LGUDetailCard
-                  lgu={selectedLGU}
-                  onBack={() => {
-                    handleBackToIncident();
-                    setIsMobileDetailOpen(true);
-                  }}
-                />
-              </div>
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
             </div>
-          </>
-        )}
+            <div className="flex-1 overflow-y-auto p-4 min-h-0">
+              <LGUDetailCard
+                lgu={selectedLGU}
+                onBack={() => {
+                  handleBackToIncident();
+                  setIsMobileDetailOpen(true);
+                }}
+              />
+            </div>
+          </div>
+        </>
+      )}
 
-        {/* PERSISTENT HIGH-CONTRAST DATA CONFIRMATION MODAL */}
+      {/* PERSISTENT HIGH-CONTRAST DATA CONFIRMATION MODAL */}
       <GpsPermissionModal
         isOpen={showGpsModal}
         onClose={() => setShowGpsModal(false)}
