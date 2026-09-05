@@ -20,11 +20,9 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "erasableSyntaxOnly": true,
-    "noFallthroughCasesInSwitch": true, // 👈 Add a comma here
+    "noFallthroughCasesInSwitch": true,
 
     /* Path Aliases */
-    "ignoreDeprecations": "6.0",
-    "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"]
     }

@@ -27,3 +27,4 @@ Thumbs.db
 # Temporary files
 temp.ps1
 skills-lock.json
+node_modules
