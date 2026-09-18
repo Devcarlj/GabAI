@@ -1,4 +1,4 @@
-import React, { useState, useEffect, Suspense, lazy } from 'react';
+import React, { useState, useEffect, Suspense } from "react";
 import axiosInstance from "../api/axiosInstance";
 import { Link, useNavigate } from "react-router-dom";
 import type { Ticket } from "../types/ticket";
@@ -8,6 +8,7 @@ import { NavbarHeader } from "../components/NavbarHeader";
 import { ActiveTriageFeed } from "../components/ActiveTriageFeed";
 import { fetchReverseGeocode } from "../api/geocode";
 import { SubmissionForm } from "../components/SubmissionForm";
+import { MapViewSection } from "../components/MapViewSection";
 /* import { MobileSubmissionBar } from '../components/MobileSubmissionBar';*/
 import type { NearbyLGU, NearbyLGUStatus } from "../types/ticket";
 import { fetchNearbyLGUs } from "../api/nearbyLgus";
@@ -17,9 +18,6 @@ import { MobileNavBar } from "../components/MobileNavBar";
 import { MobileHazardLegend } from "../components/MobileHazardLegend";
 import { MobileMapOverlay } from "../components/MobileMapOverlay";
 import { MobileIncidentCard } from "../components/MobileIncidentCard";
-
-const MapViewSection = lazy(() => import('../components/MapViewSection').then(m => ({ default: m.MapViewSection })));
-
 
 const MetricCards: React.FC<{ tickets: Ticket[]; compact?: boolean }> = ({
   tickets,
@@ -204,17 +202,12 @@ const SidebarNavLinks: React.FC<{ onNavigate?: () => void }> = ({
 );
 
 export const Home: React.FC = () => {
-  // Add state to track idle mounting
-  const [isMapReady, setIsMapReady] = useState(false);
-
-  useEffect(() => {
-    // Defer map evaluation until after the initial DOM has painted
-    const timer = setTimeout(() => setIsMapReady(true), 150);
-    return () => clearTimeout(timer);
-  }, []);
-
   const [incidentType, setIncidentType] = useState<IncidentType>("WARNING");
   const [tickets, setTickets] = useState<Ticket[]>([]);
+  const [ticketStatus, setTicketStatus] = useState<
+    "loading" | "success" | "error"
+  >("loading");
+  const [ticketError, setTicketError] = useState<string | null>(null);
   const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
   const [inputText, setInputText] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
@@ -461,22 +454,28 @@ export const Home: React.FC = () => {
   };
 
   useEffect(() => {
-    let isMounted = true;
+    const controller = new AbortController();
     const fetchInitialTickets = async () => {
       try {
-        const response = await axiosInstance.get<Ticket[]>("/tickets");
-        if (!isMounted) return;
+        const response = await axiosInstance.get<Ticket[]>("/tickets", {
+          signal: controller.signal,
+        });
         setTickets(response.data);
+        setTicketStatus("success");
+        setTicketError(null);
         if (response.data.length > 0) {
           setSelectedTicket((current) => current ?? response.data[0]);
         }
       } catch (err) {
+        if (controller.signal.aborted) return;
         console.error("Error fetching tickets:", err);
+        setTicketStatus("error");
+        setTicketError("Unable to load incidents.");
       }
     };
     void fetchInitialTickets();
     return () => {
-      isMounted = false;
+      controller.abort();
     };
   }, []);
 
@@ -647,35 +646,25 @@ export const Home: React.FC = () => {
             <div
               className={`${mobileView === "feed" ? "hidden" : "flex"} lg:flex flex-1 min-h-60 lg:h-full relative bg-[var(--theme-surface-elevated)] rounded-none lg:rounded-2xl border-0 lg:border border-slate-900 overflow-hidden lg:min-h-0`}
             >
-              {isMapReady ? (
-                <Suspense
-                  fallback={
-                    <div className="w-full h-full bg-slate-950 animate-pulse flex items-center justify-center font-mono text-xs text-slate-500">
-                      LOADING MAP ENGINE...
-                    </div>
-                  }
-                >
-                  <MapViewSection
-                    tickets={tickets}
-                    selectedTicket={selectedTicket}
-                    setSelectedTicket={handleSelectTicket}
-                    focusKey={mapFocusKey}
-                    userLocation={userLocation}
-                    isGpsActive={isGpsActive}
-                    gpsLoading={gpsLoading}
-                    locationLabel={locationLabel}
-                    onZoomComplete={handleMapZoomComplete}
-                    nearbyLGUs={nearbyLGUs}
-                    showNearLGUs={showNearLGUs}
-                    onPhViewClick={clearNearLGUs}
-                    onSelectLGU={handleSelectLGU}
-                  />
-                </Suspense>
-              ) : (
-                <div className="w-full h-full bg-slate-950 flex items-center justify-center font-mono text-xs text-slate-600">
-                  INITIALIZING...
-                </div>
-              )}
+              <Suspense fallback={null}>
+                <MapViewSection
+                  tickets={tickets}
+                  ticketStatus={ticketStatus}
+                  ticketError={ticketError}
+                  selectedTicket={selectedTicket}
+                  setSelectedTicket={handleSelectTicket}
+                  focusKey={mapFocusKey}
+                  userLocation={userLocation}
+                  isGpsActive={isGpsActive}
+                  gpsLoading={gpsLoading}
+                  locationLabel={locationLabel}
+                  onZoomComplete={handleMapZoomComplete}
+                  nearbyLGUs={nearbyLGUs}
+                  showNearLGUs={showNearLGUs}
+                  onPhViewClick={clearNearLGUs}
+                  onSelectLGU={handleSelectLGU}
+                />
+              </Suspense>
 
               {/* MOBILE: floating search bar + layer/filter/locate controls */}
               <MobileMapOverlay
@@ -711,6 +700,8 @@ export const Home: React.FC = () => {
               <div className="lg:hidden flex-1 min-h-0 overflow-y-auto px-3 py-3">
                 <ActiveTriageFeed
                   tickets={tickets}
+                  isLoading={ticketStatus === "loading"}
+                  errorMessage={ticketError}
                   selectedTicketId={selectedTicket?._id || null}
                   onSelectTicket={(t) => {
                     handleSelectTicket(t);
@@ -872,6 +863,8 @@ export const Home: React.FC = () => {
           <div className="flex-1 overflow-y-auto">
             <ActiveTriageFeed
               tickets={tickets}
+              isLoading={ticketStatus === "loading"}
+              errorMessage={ticketError}
               selectedTicketId={selectedTicket?._id || null}
               onSelectTicket={(t) => {
                 handleSelectTicket(t);
