@@ -1,10 +1,7 @@
 import React, { Suspense, lazy } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
+import { Home } from "./pages/MapPage";
 
-
-const Home = lazy(() =>
-  import("./pages/MapPage").then((module) => ({ default: module.Home })),
-);
 const Login = lazy(() =>
   import("./pages/Auth/Login").then((module) => ({ default: module.Login })),
 );
@@ -50,18 +47,9 @@ const ProfilePage = lazy(() =>
   })),
 );
 
-// 2. Create a minimal loading fallback
-const PageLoader = () => (
-  <div className="flex h-screen w-full items-center justify-center bg-[var(--theme-bg)] text-slate-400">
-    <span className="font-mono text-xs tracking-widest uppercase">
-      Loading Triage Protocol...
-    </span>
-  </div>
-);
-
 export const App: React.FC = () => {
   return (
-    <Suspense fallback={<PageLoader />}>
+    <Suspense fallback={null}>
       <Routes>
         <Route path="/" element={<Home />} />
 

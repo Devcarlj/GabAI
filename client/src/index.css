@@ -205,7 +205,8 @@
     @apply border-border outline-ring/50;
 }
   body {
-    @apply bg-background text-foreground;
+    background-color: var(--theme-bg);
+    color: var(--theme-text);
 }
   html {
     @apply font-sans;
@@ -227,4 +228,44 @@
 .maplibregl-ctrl-top-right .maplibregl-ctrl-group,
 .mapboxgl-ctrl-top-right .mapboxgl-ctrl-group {
   display: none !important;
+}
+
+@keyframes pin-icon-arrival {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes pin-ring-pulse {
+  0%, 100% {
+    opacity: 0.8;
+    transform: scale(0.72);
+  }
+  70% {
+    opacity: 0.08;
+    transform: scale(1.6);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.72);
+  }
+}
+
+.pin-icon-arrival {
+  animation: pin-icon-arrival 420ms ease-out both;
+}
+
+.pin-pulse {
+  transform-origin: center;
+  animation: pin-ring-pulse 1.8s ease-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pin-icon-arrival,
+  .pin-pulse {
+    animation: none;
+  }
 }
