@@ -1,4 +1,4 @@
-import React, { useState, useEffect, Suspense } from "react";
+import React, { useState, useEffect, Suspense, lazy } from "react";
 import axiosInstance from "../api/axiosInstance";
 import { Link, useNavigate } from "react-router-dom";
 import type { Ticket } from "../types/ticket";
@@ -8,7 +8,13 @@ import { NavbarHeader } from "../components/NavbarHeader";
 import { ActiveTriageFeed } from "../components/ActiveTriageFeed";
 import { fetchReverseGeocode } from "../api/geocode";
 import { SubmissionForm } from "../components/SubmissionForm";
-import { MapViewSection } from "../components/MapViewSection";
+import { MapSkeleton } from "../components/skeletons/MapSkeleton";
+
+const MapViewSection = lazy(() =>
+  import("../components/MapViewSection").then((module) => ({
+    default: module.MapViewSection,
+  })),
+);
 /* import { MobileSubmissionBar } from '../components/MobileSubmissionBar';*/
 import type { NearbyLGU, NearbyLGUStatus } from "../types/ticket";
 import { fetchNearbyLGUs } from "../api/nearbyLgus";
@@ -19,10 +25,11 @@ import { MobileHazardLegend } from "../components/MobileHazardLegend";
 import { MobileMapOverlay } from "../components/MobileMapOverlay";
 import { MobileIncidentCard } from "../components/MobileIncidentCard";
 
-const MetricCards: React.FC<{ tickets: Ticket[]; compact?: boolean }> = ({
-  tickets,
-  compact,
-}) => {
+const MetricCards: React.FC<{
+  tickets: Ticket[];
+  compact?: boolean;
+  isLoading?: boolean;
+}> = ({ tickets, compact, isLoading = false }) => {
   const cardClass = compact
     ? "mobile-metric-card bg-[var(--theme-surface)] border border-slate-900 flex flex-col justify-between"
     : "bg-[var(--theme-surface)] border border-slate-900 rounded-xl p-2.5 flex flex-col justify-between";
@@ -39,88 +46,130 @@ const MetricCards: React.FC<{ tickets: Ticket[]; compact?: boolean }> = ({
     <>
       <div className={cardClass}>
         <span className={labelClass}>Active Tickets</span>
-        <span className={`${valueClass} text-[var(--theme-accent)]`}>
-          {tickets.length || 14}
-        </span>
+        {isLoading ? (
+          <div className="skeleton-bone h-5 w-12 rounded mt-1" />
+        ) : (
+          <span className={`${valueClass} text-[var(--theme-accent)]`} style={{ animation: 'fade-in 0.4s ease-out forwards' }}>
+            {tickets.length}
+          </span>
+        )}
       </div>
 
       <div className={cardClass}>
         <span className={labelClass}>High Priority</span>
-        <div className="flex items-end justify-between mt-0.5">
-          <span className={`${valueClass} text-red-500`}>
-            {tickets.filter(
-              (t) =>
-                t.aiAnalysis?.urgency === "CRITICAL" ||
-                t.aiAnalysis?.urgency === "HIGH",
-            ).length || 3}
-          </span>
-          {!compact && (
-            <div className="flex items-end gap-0.5 h-4">
-              <div className="w-0.5 bg-red-950 h-1"></div>
-              <div className="w-0.5 bg-red-900 h-2"></div>
-              <div className="w-0.5 bg-red-700 h-3"></div>
-              <div className="w-0.5 bg-red-500 h-4"></div>
-            </div>
-          )}
-        </div>
+        {isLoading ? (
+          <div className="flex items-end justify-between mt-0.5">
+            <div className="skeleton-bone h-5 w-8 rounded" />
+            {!compact && <div className="skeleton-bone h-4 w-12 rounded" />}
+          </div>
+        ) : (
+          <div className="flex items-end justify-between mt-0.5" style={{ animation: 'fade-in 0.4s ease-out forwards' }}>
+            <span className={`${valueClass} text-red-500`}>
+              {
+                tickets.filter(
+                  (t) =>
+                    t.aiAnalysis?.urgency === "CRITICAL" ||
+                    t.aiAnalysis?.urgency === "HIGH",
+                ).length
+              }
+            </span>
+            {!compact && (
+              <div className="flex items-end gap-0.5 h-4">
+                <div className="w-0.5 bg-red-950 h-1"></div>
+                <div className="w-0.5 bg-red-900 h-2"></div>
+                <div className="w-0.5 bg-red-700 h-3"></div>
+                <div className="w-0.5 bg-red-500 h-4"></div>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       <div className={cardClass}>
         <span className={labelClass}>Avg Triage Time</span>
-        <div className="flex items-end justify-between mt-0.5">
-          <span className={`${valueClass} text-slate-200`}>1.8s</span>
-          {!compact && (
-            <div className="flex items-end gap-0.5 h-4">
-              <div className="w-0.5 bg-[var(--theme-accent-muted)] h-2"></div>
-              <div className="w-0.5 bg-[var(--theme-accent-subtle)] h-3"></div>
-              <div className="w-0.5 bg-[var(--theme-accent)] h-4"></div>
-            </div>
-          )}
-        </div>
+        {isLoading ? (
+          <div className="flex items-end justify-between mt-0.5">
+            <div className="skeleton-bone h-5 w-10 rounded" />
+            {!compact && <div className="skeleton-bone h-4 w-10 rounded" />}
+          </div>
+        ) : (
+          <div className="flex items-end justify-between mt-0.5" style={{ animation: 'fade-in 0.4s ease-out forwards' }}>
+            <span className={`${valueClass} text-slate-200`}>1.8s</span>
+            {!compact && (
+              <div className="flex items-end gap-0.5 h-4">
+                <div className="w-0.5 bg-[var(--theme-accent-muted)] h-2"></div>
+                <div className="w-0.5 bg-[var(--theme-accent-subtle)] h-3"></div>
+                <div className="w-0.5 bg-[var(--theme-accent)] h-4"></div>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       <div className={cardClass}>
         <span className={labelClass}>Past Trend Matrix</span>
-        <div className={`relative ${compact ? "h-3" : "h-5"} w-full mt-0.5`}>
-          <svg
-            className="w-full h-full"
-            viewBox="0 0 100 30"
-            preserveAspectRatio="none"
-          >
-            <path
-              d="M0,25 Q15,5 30,20 T60,10 T90,22 T100,15"
-              fill="none"
-              stroke="var(--theme-accent)"
-              strokeWidth="1.5"
-            />
-          </svg>
-        </div>
+        {isLoading ? (
+          <div
+            className={`skeleton-bone ${compact ? "h-3" : "h-5"} w-full rounded mt-1`}
+          />
+        ) : (
+          <div className={`relative ${compact ? "h-3" : "h-5"} w-full mt-0.5`} style={{ animation: 'fade-in 0.4s ease-out forwards' }}>
+            <svg
+              className="w-full h-full"
+              viewBox="0 0 100 30"
+              preserveAspectRatio="none"
+            >
+              <path
+                d="M0,25 Q15,5 30,20 T60,10 T90,22 T100,15"
+                fill="none"
+                stroke="var(--theme-accent)"
+                strokeWidth="1.5"
+              />
+            </svg>
+          </div>
+        )}
       </div>
 
       <div className={cardClass}>
         <span className={labelClass}>Total Triage</span>
-        <div className="flex items-end justify-between mt-0.5">
-          <span className={`${valueClass} text-slate-200`}>3</span>
-          {!compact && (
-            <div className="flex items-end gap-0.5 h-4">
-              <div className="w-0.5 bg-[var(--theme-accent-subtle)] h-1"></div>
-              <div className="w-0.5 bg-[var(--theme-accent)] h-3"></div>
-              <div className="w-0.5 bg-[var(--theme-accent-hover)] h-4"></div>
-            </div>
-          )}
-        </div>
+        {isLoading ? (
+          <div className="flex items-end justify-between mt-0.5">
+            <div className="skeleton-bone h-5 w-8 rounded" />
+            {!compact && <div className="skeleton-bone h-4 w-10 rounded" />}
+          </div>
+        ) : (
+          <div className="flex items-end justify-between mt-0.5" style={{ animation: 'fade-in 0.4s ease-out forwards' }}>
+            <span className={`${valueClass} text-slate-200`}>
+              {tickets.length}
+            </span>
+            {!compact && (
+              <div className="flex items-end gap-0.5 h-4">
+                <div className="w-0.5 bg-[var(--theme-accent-subtle)] h-1"></div>
+                <div className="w-0.5 bg-[var(--theme-accent)] h-3"></div>
+                <div className="w-0.5 bg-[var(--theme-accent-hover)] h-4"></div>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       <div className={cardClass}>
         <span className={labelClass}>SDG IMPACT (Weekly)</span>
-        <div className="flex items-center justify-between mt-0.5">
-          <span
-            className={`${compact ? "text-sm" : "text-lg"} font-bold text-emerald-400 tracking-tight leading-none`}
-          >
-            75%
-          </span>
-          <span className="text-[7px] text-slate-500">Flood Redux</span>
-        </div>
+        {isLoading ? (
+          <div className="flex items-center justify-between mt-0.5">
+            <div className="skeleton-bone h-5 w-10 rounded" />
+            <div className="skeleton-bone h-2.5 w-14 rounded" />
+          </div>
+        ) : (
+          <div className="flex items-center justify-between mt-0.5" style={{ animation: 'fade-in 0.4s ease-out forwards' }}>
+            <span
+              className={`${compact ? "text-sm" : "text-lg"} font-bold text-emerald-400 tracking-tight leading-none`}
+            >
+              75%
+            </span>
+            <span className="text-[7px] text-slate-500">Flood Redux</span>
+          </div>
+        )}
       </div>
     </>
   );
@@ -646,7 +695,7 @@ export const Home: React.FC = () => {
             <div
               className={`${mobileView === "feed" ? "hidden" : "flex"} lg:flex flex-1 min-h-60 lg:h-full relative bg-[var(--theme-surface-elevated)] rounded-none lg:rounded-2xl border-0 lg:border border-slate-900 overflow-hidden lg:min-h-0`}
             >
-              <Suspense fallback={null}>
+              <Suspense fallback={<MapSkeleton />}>
                 <MapViewSection
                   tickets={tickets}
                   ticketStatus={ticketStatus}
@@ -713,7 +762,10 @@ export const Home: React.FC = () => {
 
             {/* DESKTOP KPI GRID */}
             <div className="hidden lg:grid grid-cols-3 gap-3 shrink-0 h-31.25">
-              <MetricCards tickets={tickets} />
+              <MetricCards
+                tickets={tickets}
+                isLoading={ticketStatus === "loading"}
+              />
             </div>
           </div>
 

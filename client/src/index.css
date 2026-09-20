@@ -1,4 +1,55 @@
-@import "tailwindcss";@import "tw-animate-css";@import "shadcn/tailwind.css";@import "@fontsource-variable/geist";@custom-variant dark (&:is(.dark *));@theme inline {--font-heading: var(--font-sans);--font-sans: 'Geist Variable', sans-serif;--color-sidebar-ring: var(--sidebar-ring);--color-sidebar-border: var(--sidebar-border);--color-sidebar-accent-foreground: var(--sidebar-accent-foreground);--color-sidebar-accent: var(--sidebar-accent);--color-sidebar-primary-foreground: var(--sidebar-primary-foreground);--color-sidebar-primary: var(--sidebar-primary);--color-sidebar-foreground: var(--sidebar-foreground);--color-sidebar: var(--sidebar);--color-chart-5: var(--chart-5);--color-chart-4: var(--chart-4);--color-chart-3: var(--chart-3);--color-chart-2: var(--chart-2);--color-chart-1: var(--chart-1);--color-ring: var(--ring);--color-input: var(--input);--color-border: var(--border);--color-destructive: var(--destructive);--color-accent-foreground: var(--accent-foreground);--color-accent: var(--accent);--color-muted-foreground: var(--muted-foreground);--color-muted: var(--muted);--color-secondary-foreground: var(--secondary-foreground);--color-secondary: var(--secondary);--color-primary-foreground: var(--primary-foreground);--color-primary: var(--primary);--color-popover-foreground: var(--popover-foreground);--color-popover: var(--popover);--color-card-foreground: var(--card-foreground);--color-card: var(--card);--color-foreground: var(--foreground);--color-background: var(--background);--radius-sm: calc(var(--radius) * 0.6);--radius-md: calc(var(--radius) * 0.8);--radius-lg: var(--radius);--radius-xl: calc(var(--radius) * 1.4);--radius-2xl: calc(var(--radius) * 1.8);--radius-3xl: calc(var(--radius) * 2.2);--radius-4xl: calc(var(--radius) * 2.6);--color-brand-dark: var(--theme-bg);--color-brand-surface: var(--theme-surface);--color-brand-border: var(--theme-border);--color-brand-muted: var(--theme-text-muted);--color-brand-teal: var(--theme-accent);}
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+@import "@fontsource-variable/geist";
+@custom-variant dark (&:is(.dark *));
+@theme inline {
+  --font-heading: var(--font-sans);
+  --font-sans: "Geist Variable", sans-serif;
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --color-foreground: var(--foreground);
+  --color-background: var(--background);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+  --color-brand-dark: var(--theme-bg);
+  --color-brand-surface: var(--theme-surface);
+  --color-brand-border: var(--theme-border);
+  --color-brand-muted: var(--theme-text-muted);
+  --color-brand-teal: var(--theme-accent);
+}
 :root {
   /* ══════════════════════════════════════════════════════
      BASE PALETTE — Change these 4 values to re-theme the
@@ -110,7 +161,6 @@
   --chart-5: var(--color-gray);
 }
 
-
 /* Mobile-first dashboard utilities */
 .mobile-chat-bar {
   position: fixed;
@@ -186,43 +236,62 @@
 }
 
 @keyframes fade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes slide-in-left {
-  from { transform: translateX(-100%); }
-  to { transform: translateX(0); }
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
 }
 
 @keyframes slide-up {
-  from { transform: translateY(100%); }
-  to { transform: translateY(0); }
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
 }
 
 @layer base {
   * {
     @apply border-border outline-ring/50;
-}
+  }
   body {
     background-color: var(--theme-bg);
     color: var(--theme-text);
-}
+  }
   html {
     @apply font-sans;
+  }
 }
 
+@media (max-width: 1023px) {
+  .app-desktop-only,
+  .app-kpi-grid,
+  .app-right-panel,
+  .map-loader-desktop-only {
+    display: none !important;
+  }
 }
 
 .scrollbar-hidden {
-  -ms-overflow-style: none;  /* IE and Edge */
-  scrollbar-width: none;     /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
 }
 
 .scrollbar-hidden::-webkit-scrollbar {
   display: none; /* Chrome, Safari, Opera */
 }
-
 
 /* Hides default maplibre navigation controls (Zoom +, Zoom -, Compass) */
 .maplibregl-ctrl-top-right .maplibregl-ctrl-group,
@@ -240,7 +309,8 @@
 }
 
 @keyframes pin-ring-pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 0.8;
     transform: scale(0.72);
   }
@@ -267,5 +337,195 @@
   .pin-icon-arrival,
   .pin-pulse {
     animation: none;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════
+   SKELETON LOADER UTILITIES
+   ═══════════════════════════════════════════════════════ */
+
+@keyframes skeleton-shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes skeleton-fade-pulse {
+  0%,
+  100% {
+    opacity: 0.45;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+.skeleton-bone {
+  position: relative;
+  overflow: hidden;
+  background: var(--theme-surface-elevated);
+  border-radius: 0.375rem;
+}
+
+.skeleton-bone::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.04) 40%,
+    rgba(255, 255, 255, 0.08) 50%,
+    rgba(255, 255, 255, 0.04) 60%,
+    transparent 100%
+  );
+  animation: skeleton-shimmer 1.8s ease-in-out infinite;
+}
+
+.skeleton-pin {
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  border-radius: 9999px;
+  background: var(--theme-surface-elevated);
+  border: 2px solid var(--theme-border);
+  animation: skeleton-fade-pulse 2s ease-in-out infinite;
+}
+
+.skeleton-pin::before {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  border-radius: 9999px;
+  border: 2px solid var(--theme-border-subtle);
+  animation: pin-ring-pulse 2.2s ease-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton-bone::after {
+    animation: none;
+  }
+  .skeleton-pin,
+  .skeleton-pin::before {
+    animation: none;
+  }
+}
+
+.mobile-loader-search,
+.mobile-loader-controls,
+.mobile-loader-legend {
+  display: none;
+}
+
+@media (max-width: 1023px) {
+  .mobile-loader-search {
+    position: absolute;
+    top: 0.75rem;
+    left: 0.75rem;
+    right: 0.75rem;
+    z-index: 30;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    height: 2.75rem;
+    padding: 0.375rem 0.375rem 0.375rem 1rem;
+    border: 1px solid #1e293b;
+    border-radius: 9999px;
+    background: rgba(2, 6, 23, 0.9);
+    color: #64748b;
+    font-size: 0.75rem;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+  }
+  .mobile-loader-search-placeholder {
+    flex: 1;
+    min-width: 0;
+    height: 0.75rem;
+    max-width: 12rem;
+  }
+  .mobile-loader-mic {
+    display: flex;
+    width: 2rem;
+    height: 2rem;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9999px;
+    background: var(--theme-accent);
+    color: #020617;
+  }
+  .mobile-loader-controls {
+    position: absolute;
+    top: 4.25rem;
+    right: 0.75rem;
+    z-index: 30;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .mobile-loader-controls button {
+    display: flex;
+    width: 2.25rem;
+    height: 2.25rem;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: 1px solid #1e293b;
+    border-radius: 9999px;
+    background: rgba(2, 6, 23, 0.9);
+    color: #cbd5e1;
+  }
+  .mobile-loader-controls button.accent {
+    border-color: transparent;
+    background: var(--theme-accent);
+    color: #020617;
+  }
+  .mobile-loader-legend {
+    position: absolute;
+    top: 19.5rem;
+    left: 0.75rem;
+    z-index: 30;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 0.625rem 0.75rem;
+    border: 1px solid #1e293b;
+    border-radius: 0.75rem;
+    background: rgba(2, 6, 23, 0.9);
+    color: #cbd5e1;
+    font-size: 0.625rem;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+  }
+  .mobile-loader-legend-title {
+    width: 5.5rem;
+    height: 0.5rem;
+    margin-bottom: 0.125rem;
+  }
+  .mobile-loader-legend span:not(.mobile-loader-legend-title) {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+  }
+  .mobile-loader-legend i {
+    width: 0.375rem;
+    height: 0.375rem;
+    border-radius: 9999px;
+  }
+  .mobile-loader-legend-label {
+    width: 4.5rem;
+    height: 0.625rem;
+  }
+  .mobile-loader-legend .critical {
+    background: #ef4444;
+  }
+  .mobile-loader-legend .high {
+    background: #f97316;
+  }
+  .mobile-loader-legend .moderate {
+    background: #fbbf24;
+  }
+  .mobile-loader-legend .safe {
+    background: #10b981;
   }
 }
