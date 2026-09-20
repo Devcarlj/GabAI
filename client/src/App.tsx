@@ -1,6 +1,7 @@
 import React, { Suspense, lazy } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { Home } from "./pages/MapPage";
+import { AppShellSkeleton } from "./components/skeletons/AppShellSkeleton";
 
 const Login = lazy(() =>
   import("./pages/Auth/Login").then((module) => ({ default: module.Login })),
@@ -47,9 +48,11 @@ const ProfilePage = lazy(() =>
   })),
 );
 
+const PageLoadingFallback: React.FC = () => <AppShellSkeleton />;
+
 export const App: React.FC = () => {
   return (
-    <Suspense fallback={null}>
+    <Suspense fallback={<PageLoadingFallback />}>
       <Routes>
         <Route path="/" element={<Home />} />
 

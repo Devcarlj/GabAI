@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from "react";
 import type { Ticket, UrgencyLevel } from "../types/ticket";
+import { FeedSkeleton } from "./skeletons/FeedSkeleton";
 
 type UrgencyFilter = "ALL" | UrgencyLevel;
 
@@ -81,11 +82,7 @@ export const ActiveTriageFeed: React.FC<ActiveTriageFeedProps> = ({
       <div
         className={`flex flex-col gap-2 pr-1 ${embedded ? "" : "overflow-y-auto max-h-[500px] scrollbar-thin scrollbar-track-slate-950 scrollbar-thumb-slate-800 hover:scrollbar-thumb-[var(--theme-accent)]/50"}`}
       >
-        {isLoading && (
-          <p className="text-[11px] text-slate-500 font-mono text-center py-4 animate-pulse">
-            Loading incidents...
-          </p>
-        )}
+        {isLoading && <FeedSkeleton count={5} />}
         {!isLoading && errorMessage && (
           <p className="text-[11px] text-red-400 font-mono text-center py-4">
             {errorMessage}

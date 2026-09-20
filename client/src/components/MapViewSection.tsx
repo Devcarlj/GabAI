@@ -3,6 +3,7 @@ import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import type { Ticket, NearbyLGU } from "../types/ticket";
 import { ActiveTriageFeed } from "./ActiveTriageFeed";
+import { MapSkeleton } from "./skeletons/MapSkeleton";
 
 interface UserLocation {
   lat: number;
@@ -80,6 +81,8 @@ export const MapViewSection: React.FC<MapViewSectionProps> = ({
   const isFirstRenderRef = useRef<boolean>(true);
   const prevGpsActiveRef = useRef<boolean>(false);
   const [unconfirmedCount, setUnconfirmedCount] = useState<number>(0);
+  const [mapLoaded, setMapLoaded] = useState<boolean>(false);
+  const [pinsRendered, setPinsRendered] = useState<boolean>(false);
   const prevFocusKeyRef = useRef<number>(0);
 
   const handleZoomToPhilippines = () => {
@@ -112,6 +115,7 @@ export const MapViewSection: React.FC<MapViewSectionProps> = ({
       attributionControl: false,
     });
 
+    mapInstance.on("load", () => setMapLoaded(true));
     mapInstance.addControl(new maplibregl.NavigationControl(), "top-right");
     setMap(mapInstance);
 
@@ -223,6 +227,7 @@ export const MapViewSection: React.FC<MapViewSectionProps> = ({
     });
 
     setUnconfirmedCount(skipped);
+    setPinsRendered(true);
 
     if (selectedTicket && isFirstRenderRef.current) {
       isFirstRenderRef.current = false;
@@ -401,6 +406,17 @@ export const MapViewSection: React.FC<MapViewSectionProps> = ({
         ref={mapContainerRef}
         className="absolute inset-0 w-full h-full z-0"
       />
+
+      {/* Skeleton overlay — only fades out once BOTH map canvas AND pins data have loaded and rendered */}
+      <div
+        className={`transition-opacity duration-300 ${
+          mapLoaded && ticketStatus !== "loading" && (tickets.length === 0 || pinsRendered)
+            ? "opacity-0 pointer-events-none"
+            : "opacity-100 pointer-events-auto"
+        }`}
+      >
+        <MapSkeleton />
+      </div>
 
       {/* Floating Map Layers Badge */}
       <div className="absolute top-3 left-3 z-10 flex items-center bg-[#070b12]/90 border border-slate-800 px-2.5 py-1 rounded-md text-[10px] text-slate-300 backdrop-blur-md">
