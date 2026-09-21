@@ -1,4 +1,4 @@
-import React, { useState, useEffect, Suspense, lazy } from "react";
+import React, { useState, useEffect, useMemo, Suspense, lazy } from "react";
 import axiosInstance from "../api/axiosInstance";
 import { Link, useNavigate } from "react-router-dom";
 import type { Ticket } from "../types/ticket";
@@ -49,7 +49,10 @@ const MetricCards: React.FC<{
         {isLoading ? (
           <div className="skeleton-bone h-5 w-12 rounded mt-1" />
         ) : (
-          <span className={`${valueClass} text-[var(--theme-accent)]`} style={{ animation: 'fade-in 0.4s ease-out forwards' }}>
+          <span
+            className={`${valueClass} text-[var(--theme-accent)]`}
+            style={{ animation: "fade-in 0.4s ease-out forwards" }}
+          >
             {tickets.length}
           </span>
         )}
@@ -63,7 +66,10 @@ const MetricCards: React.FC<{
             {!compact && <div className="skeleton-bone h-4 w-12 rounded" />}
           </div>
         ) : (
-          <div className="flex items-end justify-between mt-0.5" style={{ animation: 'fade-in 0.4s ease-out forwards' }}>
+          <div
+            className="flex items-end justify-between mt-0.5"
+            style={{ animation: "fade-in 0.4s ease-out forwards" }}
+          >
             <span className={`${valueClass} text-red-500`}>
               {
                 tickets.filter(
@@ -93,7 +99,10 @@ const MetricCards: React.FC<{
             {!compact && <div className="skeleton-bone h-4 w-10 rounded" />}
           </div>
         ) : (
-          <div className="flex items-end justify-between mt-0.5" style={{ animation: 'fade-in 0.4s ease-out forwards' }}>
+          <div
+            className="flex items-end justify-between mt-0.5"
+            style={{ animation: "fade-in 0.4s ease-out forwards" }}
+          >
             <span className={`${valueClass} text-slate-200`}>1.8s</span>
             {!compact && (
               <div className="flex items-end gap-0.5 h-4">
@@ -113,7 +122,10 @@ const MetricCards: React.FC<{
             className={`skeleton-bone ${compact ? "h-3" : "h-5"} w-full rounded mt-1`}
           />
         ) : (
-          <div className={`relative ${compact ? "h-3" : "h-5"} w-full mt-0.5`} style={{ animation: 'fade-in 0.4s ease-out forwards' }}>
+          <div
+            className={`relative ${compact ? "h-3" : "h-5"} w-full mt-0.5`}
+            style={{ animation: "fade-in 0.4s ease-out forwards" }}
+          >
             <svg
               className="w-full h-full"
               viewBox="0 0 100 30"
@@ -138,7 +150,10 @@ const MetricCards: React.FC<{
             {!compact && <div className="skeleton-bone h-4 w-10 rounded" />}
           </div>
         ) : (
-          <div className="flex items-end justify-between mt-0.5" style={{ animation: 'fade-in 0.4s ease-out forwards' }}>
+          <div
+            className="flex items-end justify-between mt-0.5"
+            style={{ animation: "fade-in 0.4s ease-out forwards" }}
+          >
             <span className={`${valueClass} text-slate-200`}>
               {tickets.length}
             </span>
@@ -161,7 +176,10 @@ const MetricCards: React.FC<{
             <div className="skeleton-bone h-2.5 w-14 rounded" />
           </div>
         ) : (
-          <div className="flex items-center justify-between mt-0.5" style={{ animation: 'fade-in 0.4s ease-out forwards' }}>
+          <div
+            className="flex items-center justify-between mt-0.5"
+            style={{ animation: "fade-in 0.4s ease-out forwards" }}
+          >
             <span
               className={`${compact ? "text-sm" : "text-lg"} font-bold text-emerald-400 tracking-tight leading-none`}
             >
@@ -267,8 +285,15 @@ export const Home: React.FC = () => {
   const [isRightPanelOpen, setIsRightPanelOpen] = useState<boolean>(true);
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState<boolean>(false);
   const [isMobileDetailOpen, setIsMobileDetailOpen] = useState<boolean>(false);
+  const [isMobileDetailClosing, setIsMobileDetailClosing] =
+    useState<boolean>(false);
+  const [mobileDetailDragOffset, setMobileDetailDragOffset] =
+    useState<number>(0);
   const [mapFocusKey, setMapFocusKey] = useState<number>(0);
   const isClosingRef = React.useRef<boolean>(false);
+  const mobileDetailCloseTimeoutRef = React.useRef<ReturnType<
+    typeof setTimeout
+  > | null>(null);
 
   // Place with your other state hooks in Home.tsx
   const [userLocation, setUserLocation] = useState<{
@@ -292,6 +317,7 @@ export const Home: React.FC = () => {
   const [showNearLGUs, setShowNearLGUs] = useState<boolean>(false);
   const [selectedLGU, setSelectedLGU] = useState<NearbyLGU | null>(null);
   const [isMobileLguOpen, setIsMobileLguOpen] = useState<boolean>(false);
+  const [mapResetKey, setMapResetKey] = useState<number>(0);
   const pollTimeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(
     null,
   );
@@ -307,6 +333,11 @@ export const Home: React.FC = () => {
     setSelectedLGU(null);
     setIsMobileLguOpen(false);
     setActiveRightPanel((current) => (current === "lgu" ? "detail" : current));
+  };
+
+  const handleResetMapView = () => {
+    clearNearLGUs();
+    setMapResetKey((current) => current + 1);
   };
 
   const pollNearbyLGUs = async (ticketId: string) => {
@@ -450,6 +481,12 @@ export const Home: React.FC = () => {
   // 1. Selecting a ticket
   const handleSelectTicket = (ticket: Ticket | null) => {
     clearNearLGUs();
+    if (mobileDetailCloseTimeoutRef.current) {
+      clearTimeout(mobileDetailCloseTimeoutRef.current);
+      mobileDetailCloseTimeoutRef.current = null;
+    }
+    setIsMobileDetailClosing(false);
+    setMobileDetailDragOffset(0);
     if (!ticket) {
       // User unselected or closed ticket
       setSelectedTicket(null);
@@ -484,7 +521,15 @@ export const Home: React.FC = () => {
   // 3. Explicitly close the mobile detail card
   const handleCloseMobileDetail = () => {
     isClosingRef.current = true; // Block queued moveend callbacks from re-opening it
-    setIsMobileDetailOpen(false);
+    setIsMobileDetailClosing(true);
+    if (mobileDetailCloseTimeoutRef.current) {
+      clearTimeout(mobileDetailCloseTimeoutRef.current);
+    }
+    mobileDetailCloseTimeoutRef.current = setTimeout(() => {
+      setIsMobileDetailOpen(false);
+      setIsMobileDetailClosing(false);
+      mobileDetailCloseTimeoutRef.current = null;
+    }, 220);
   };
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -574,6 +619,29 @@ export const Home: React.FC = () => {
   const [mobileSearchValue, setMobileSearchValue] = useState<string>("");
   const [mobileView, setMobileView] = useState<"map" | "feed">("map");
   const navigate = useNavigate();
+
+  const normalizedSearch = mobileSearchValue.trim().toLocaleLowerCase();
+  const visibleTickets = useMemo(
+    () =>
+      normalizedSearch
+        ? tickets.filter((ticket) =>
+            [
+              ticket.ticketId,
+              ticket.rawText,
+              ticket.locationLabel,
+              ticket.aiAnalysis?.location,
+              ticket.aiAnalysis?.summary,
+              ticket.aiAnalysis?.urgency,
+              ticket.aiAnalysis?.incidentType,
+            ]
+              .filter(Boolean)
+              .some((value) =>
+                String(value).toLocaleLowerCase().includes(normalizedSearch),
+              ),
+          )
+        : tickets,
+    [normalizedSearch, tickets],
+  );
 
   const handleMobileNavClick = (id: string) => {
     if (id === "feed") {
@@ -698,11 +766,15 @@ export const Home: React.FC = () => {
               <Suspense fallback={<MapSkeleton />}>
                 <MapViewSection
                   tickets={tickets}
+                  visibleTicketIds={visibleTickets.flatMap((ticket) =>
+                    ticket._id ? [ticket._id] : [],
+                  )}
                   ticketStatus={ticketStatus}
                   ticketError={ticketError}
                   selectedTicket={selectedTicket}
                   setSelectedTicket={handleSelectTicket}
                   focusKey={mapFocusKey}
+                  resetViewKey={mapResetKey}
                   userLocation={userLocation}
                   isGpsActive={isGpsActive}
                   gpsLoading={gpsLoading}
@@ -719,6 +791,7 @@ export const Home: React.FC = () => {
               <MobileMapOverlay
                 searchValue={mobileSearchValue}
                 onSearchChange={setMobileSearchValue}
+                onLayersClick={handleResetMapView}
                 onLocateClick={handleToggleGps}
                 onFilterClick={() => setIsFilterFeedOpen(true)}
               />
@@ -730,15 +803,32 @@ export const Home: React.FC = () => {
 
               {/* MOBILE: incident detail overlay */}
               {isMobileDetailOpen && selectedTicket && (
-                <div className="lg:hidden absolute bottom-0 left-0 right-0 z-30 max-h-[75%] overflow-y-auto bg-[var(--theme-surface)]/97 backdrop-blur-sm border-t border-slate-800 rounded-t-2xl shadow-[0_-8px_30px_rgba(0,0,0,0.5)] px-4 pt-3 pb-[calc(env(safe-area-inset-bottom)+16px)]">
-                  <MobileIncidentCard
-                    ticket={selectedTicket}
-                    userLocation={userLocation}
-                    showNearLGUs={showNearLGUs}
-                    nearbyLGUsStatus={nearbyLGUsStatus}
-                    onToggleNearLGUs={handleToggleNearLGUs}
-                    onClose={handleCloseMobileDetail}
-                  />
+                <div
+                  className="lg:hidden absolute inset-0 z-30"
+                  onClick={handleCloseMobileDetail}
+                >
+                  <div
+                    className="absolute bottom-0 left-0 right-0 max-h-[75%] overflow-y-auto bg-[var(--theme-surface)]/97 backdrop-blur-sm border-t border-slate-800 rounded-t-2xl shadow-[0_-8px_30px_rgba(0,0,0,0.5)] px-4 pt-3 pb-[calc(env(safe-area-inset-bottom)+16px)]"
+                    onClick={(event) => event.stopPropagation()}
+                    style={{
+                      transform: isMobileDetailClosing
+                        ? "translateY(100%)"
+                        : `translateY(${mobileDetailDragOffset}px)`,
+                      transition: isMobileDetailClosing
+                        ? "transform 200ms ease-out"
+                        : "none",
+                    }}
+                  >
+                    <MobileIncidentCard
+                      ticket={selectedTicket}
+                      userLocation={userLocation}
+                      showNearLGUs={showNearLGUs}
+                      nearbyLGUsStatus={nearbyLGUsStatus}
+                      onToggleNearLGUs={handleToggleNearLGUs}
+                      onClose={handleCloseMobileDetail}
+                      onDragOffsetChange={setMobileDetailDragOffset}
+                    />
+                  </div>
                 </div>
               )}
             </div>

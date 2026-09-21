@@ -31,22 +31,17 @@ export const AppShellSkeleton: React.FC = () => (
               />
             </svg>
           </div>
-          <div
+          <img
+            src="/src/assets/favicon.png"
+            alt="GabAI"
             style={{
               width: "1.25rem",
               height: "1.25rem",
               borderRadius: "9999px",
-              background: "linear-gradient(to top right, #2563eb, #ef4444)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: "9px",
-              fontWeight: "bold",
-              color: "white",
+              objectFit: "cover",
+              boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
             }}
-          >
-            🇵🇭
-          </div>
+          />
           <h1
             style={{
               fontSize: "0.75rem",

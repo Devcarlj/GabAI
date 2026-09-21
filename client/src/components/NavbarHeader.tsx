@@ -19,7 +19,17 @@ export const NavbarHeader: React.FC<NavbarHeaderProps> = ({ onToggleDrawer }) =>
             </svg>
           </button>
         )}
-        <div className="w-5 h-5 rounded-full bg-linear-to-tr from-blue-600 to-red-500 flex items-center justify-center text-[9px] font-bold text-white shadow-md">🇵🇭</div>
+         <img
+                src="/src/assets/favicon.png"
+                alt="GabAI"
+                style={{
+                  width: '1.25rem',
+                  height: '1.25rem',
+                  borderRadius: '9999px',
+                  objectFit: 'cover',
+                  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                }}
+              />
         <h1 className="text-xs font-bold tracking-wider text-slate-200">
           GABAI <span className="text-slate-500 font-normal text-[11px] hidden sm:inline">(DICT eGov Plugin)</span>
         </h1>

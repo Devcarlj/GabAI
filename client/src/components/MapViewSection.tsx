@@ -12,11 +12,13 @@ interface UserLocation {
 
 interface MapViewSectionProps {
   tickets: Ticket[];
+  visibleTicketIds?: string[];
   ticketStatus: "loading" | "success" | "error";
   ticketError: string | null;
   selectedTicket: Ticket | null;
   setSelectedTicket: (ticket: Ticket | null) => void;
   focusKey?: number;
+  resetViewKey?: number;
   userLocation?: UserLocation | null;
   isGpsActive?: boolean;
   gpsLoading?: boolean;
@@ -59,11 +61,13 @@ const getTicketCoordinates = (ticket: Ticket): [number, number] | null => {
 
 export const MapViewSection: React.FC<MapViewSectionProps> = ({
   tickets,
+  visibleTicketIds,
   ticketStatus,
   ticketError,
   selectedTicket,
   setSelectedTicket,
   focusKey = 0,
+  resetViewKey = 0,
   userLocation = null,
   isGpsActive = false,
   gpsLoading = false,
@@ -78,12 +82,19 @@ export const MapViewSection: React.FC<MapViewSectionProps> = ({
   const [map, setMap] = useState<maplibregl.Map | null>(null);
   const markersRef = useRef<maplibregl.Marker[]>([]);
   const userMarkerRef = useRef<maplibregl.Marker | null>(null);
+  const selectedTicketRef = useRef<Ticket | null>(selectedTicket);
+  const selectTicketRef = useRef(setSelectedTicket);
+  const ticketIconElementsRef = useRef<Map<string, HTMLElement>>(new Map());
+  const ticketMarkerElementsRef = useRef<Map<string, HTMLElement>>(new Map());
   const isFirstRenderRef = useRef<boolean>(true);
   const prevGpsActiveRef = useRef<boolean>(false);
   const [unconfirmedCount, setUnconfirmedCount] = useState<number>(0);
   const [mapLoaded, setMapLoaded] = useState<boolean>(false);
   const [pinsRendered, setPinsRendered] = useState<boolean>(false);
   const prevFocusKeyRef = useRef<number>(0);
+
+  selectedTicketRef.current = selectedTicket;
+  selectTicketRef.current = setSelectedTicket;
 
   const handleZoomToPhilippines = () => {
     if (!map) return;
@@ -136,6 +147,8 @@ export const MapViewSection: React.FC<MapViewSectionProps> = ({
     // Remove existing markers
     markersRef.current.forEach((marker) => marker.remove());
     markersRef.current = [];
+    ticketIconElementsRef.current.clear();
+    ticketMarkerElementsRef.current.clear();
 
     let skipped = 0;
 
@@ -165,7 +178,7 @@ export const MapViewSection: React.FC<MapViewSectionProps> = ({
             : rawUrgency === "MEDIUM" || rawUrgency === "MINOR"
               ? "#f59e0b" // Amber
               : "#0ea5e9"; // Sky Blue (LOW or default)
-      const isSelected = selectedTicket?._id === ticket._id;
+      const isSelected = selectedTicketRef.current?._id === ticket._id;
 
       // Render Lucide Construction SVG if CONSTRUCTION, else AlertTriangle SVG
       // 3. Render Warning Triangle with Solid Filled Lucide Hammer inside
@@ -194,20 +207,27 @@ export const MapViewSection: React.FC<MapViewSectionProps> = ({
       <span class="absolute -left-0.5 -top-0.5 inline-flex h-7 w-7 rounded-full pin-pulse" style="border: 2px solid ${pinColor}"></span>
 
       <!-- Alert Icon Container -->
-      <div class="relative flex items-center justify-center p-1 rounded-full border-2 border-[#070b12] bg-[#070b12]/90 shadow-md transition-transform duration-150 group-hover:scale-125 pin-icon-arrival"
+        <div class="relative flex items-center justify-center p-1 rounded-full border-2 border-[#070b12] bg-[#070b12]/90 shadow-md transition-transform duration-150 group-hover:scale-125 pin-icon-arrival ticket-pin-icon"
           style="${isSelected ? `transform: scale(1.35); box-shadow: 0 0 12px ${pinColor};` : ""}">
         ${iconSvg}
       </div>
     `;
+
+      const iconElement = el.querySelector<HTMLElement>(".ticket-pin-icon");
+      if (iconElement && ticket._id) {
+        iconElement.dataset.pinColor = pinColor;
+        ticketIconElementsRef.current.set(ticket._id, iconElement);
+        ticketMarkerElementsRef.current.set(ticket._id, el);
+      }
 
       // Inside MapViewSection.tsx -> marker click event listener
       el.addEventListener("click", (e) => {
         e.stopPropagation();
 
         // ALWAYS trigger selection so mobile detail card re-opens if closed
-        setSelectedTicket(ticket);
+        selectTicketRef.current(ticket);
 
-        if (selectedTicket?._id === ticket._id) {
+        if (selectedTicketRef.current?._id === ticket._id) {
           const isMobile = window.innerWidth < 768;
           map.flyTo({
             center: [lng, lat],
@@ -232,7 +252,26 @@ export const MapViewSection: React.FC<MapViewSectionProps> = ({
     if (selectedTicket && isFirstRenderRef.current) {
       isFirstRenderRef.current = false;
     }
-  }, [map, tickets, selectedTicket, setSelectedTicket]);
+  }, [map, tickets]);
+
+  useEffect(() => {
+    if (!visibleTicketIds) return;
+
+    const visibleIds = new Set(visibleTicketIds);
+    ticketMarkerElementsRef.current.forEach((markerElement, ticketId) => {
+      markerElement.style.display = visibleIds.has(ticketId) ? "" : "none";
+    });
+  }, [visibleTicketIds]);
+
+  // Update selection styling in place so the animated pin elements stay mounted.
+  useEffect(() => {
+    ticketIconElementsRef.current.forEach((iconElement, ticketId) => {
+      const isSelected = selectedTicket?._id === ticketId;
+      const pinColor = iconElement.dataset.pinColor ?? "#0ea5e9";
+      iconElement.style.transform = isSelected ? "scale(1.35)" : "";
+      iconElement.style.boxShadow = isSelected ? `0 0 12px ${pinColor}` : "";
+    });
+  }, [selectedTicket]);
 
   // 3. Zoom to selected ticket when user picks an incident
   // Track previous selected ticket ID to avoid zooming during parent re-renders (like typing)
@@ -333,6 +372,20 @@ export const MapViewSection: React.FC<MapViewSectionProps> = ({
     prevGpsActiveRef.current = isGpsActive;
   }, [map, isGpsActive, userLocation]);
 
+  useEffect(() => {
+    if (!map || resetViewKey === 0) return;
+
+    const { center, zoom } = getResponsiveMapSettings();
+    map.flyTo({
+      center,
+      zoom,
+      pitch: 45,
+      essential: true,
+      speed: 1.2,
+      curve: 1.4,
+    });
+  }, [map, resetViewKey]);
+
   // 6. Render nearby-LGU pins and frame the map so the incident stays dead-center.
   useEffect(() => {
     if (!map) return;
@@ -410,7 +463,9 @@ export const MapViewSection: React.FC<MapViewSectionProps> = ({
       {/* Skeleton overlay — only fades out once BOTH map canvas AND pins data have loaded and rendered */}
       <div
         className={`transition-opacity duration-300 ${
-          mapLoaded && ticketStatus !== "loading" && (tickets.length === 0 || pinsRendered)
+          mapLoaded &&
+          ticketStatus !== "loading" &&
+          (tickets.length === 0 || pinsRendered)
             ? "opacity-0 pointer-events-none"
             : "opacity-100 pointer-events-auto"
         }`}
@@ -420,7 +475,7 @@ export const MapViewSection: React.FC<MapViewSectionProps> = ({
 
       {/* Floating Map Layers Badge */}
       <div className="absolute top-3 left-3 z-10 flex items-center bg-[#070b12]/90 border border-slate-800 px-2.5 py-1 rounded-md text-[10px] text-slate-300 backdrop-blur-md">
-        <span className="text-cyan-400 mr-1">🗺️</span> Map Layers
+        <span className="text-slate-400 mr-1">🖈</span> Map Layers
       </div>
 
       {/* Top Right: Zoom Out Philippines Button */}
