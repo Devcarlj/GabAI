@@ -93,8 +93,10 @@ export const MapViewSection: React.FC<MapViewSectionProps> = ({
   const [pinsRendered, setPinsRendered] = useState<boolean>(false);
   const prevFocusKeyRef = useRef<number>(0);
 
-  selectedTicketRef.current = selectedTicket;
-  selectTicketRef.current = setSelectedTicket;
+  useEffect(() => {
+    selectedTicketRef.current = selectedTicket;
+    selectTicketRef.current = setSelectedTicket;
+  }, [selectedTicket, setSelectedTicket]);
 
   const handleZoomToPhilippines = () => {
     if (!map) return;
