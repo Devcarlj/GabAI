@@ -34,6 +34,7 @@ export const AppShellSkeleton: React.FC = () => (
           </div>
           <img
             src={favicon}
+            src={favicon}
             alt="GabAI"
             style={{
               width: "1.25rem",
