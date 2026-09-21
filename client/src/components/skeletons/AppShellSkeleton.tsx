@@ -1,6 +1,7 @@
 import React from "react";
 import { MapSkeleton } from "./MapSkeleton";
 import { MobileLoaderOverlay } from "./MobileLoaderOverlay";
+import favicon from "../../../assets/favicon.png";
 
 export const AppShellSkeleton: React.FC = () => (
   <div className="app-shell">
@@ -32,7 +33,7 @@ export const AppShellSkeleton: React.FC = () => (
             </svg>
           </div>
           <img
-            src="/src/assets/favicon.png"
+            src={favicon}
             alt="GabAI"
             style={{
               width: "1.25rem",
