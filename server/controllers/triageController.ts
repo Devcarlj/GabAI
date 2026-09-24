@@ -136,26 +136,45 @@ if (photoUrl && photoUrl.startsWith('data:')) {
   }
 }
 
-    // Call the Gemini API using @google/genai SDK
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
-      contents,
-      config: {
-        systemInstruction,
-        responseMimeType: 'application/json',
-        responseSchema: aiResponseSchema,
-        temperature: 0.1, // Low temperature for deterministic, reliable JSON parsing
-      },
-    });
+    let parsedAIOutput: {
+      urgency: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
+      incidentType: 'WARNING' | 'CONSTRUCTION';
+      location: string;
+      summary: string;
+      dispatchOrder: string;
+      recommendedActions: string[];
+    };
 
-    const aiText = response.text;
+    try {
+      // Call the Gemini API using @google/genai SDK.
+      const response = await ai.models.generateContent({
+        model: 'gemini-2.5-flash',
+        contents,
+        config: {
+          systemInstruction,
+          responseMimeType: 'application/json',
+          responseSchema: aiResponseSchema,
+          temperature: 0.1,
+        },
+      });
 
-    if (!aiText) {
-      throw new Error('No response generated from Gemini API.');
+      const aiText = response.text;
+      if (!aiText) {
+        throw new Error('No response generated from Gemini API.');
+      }
+
+      parsedAIOutput = JSON.parse(aiText);
+    } catch (error) {
+      console.error('Gemini triage failed; saving report with fallback triage:', error);
+      parsedAIOutput = {
+        urgency: 'MEDIUM',
+        incidentType: manualIncidentType || 'WARNING',
+        location: locationLabelClean || 'Location not specified',
+        summary: rawText.trim(),
+        dispatchOrder: 'Review citizen report and dispatch the appropriate response team.',
+        recommendedActions: ['Avoid the reported hazard and follow local emergency guidance.'],
+      };
     }
-
-    // Parse the JSON output from Gemini
-    const parsedAIOutput = JSON.parse(aiText);
 
     // If the citizen never shared GPS, we still have the AI's text-extracted
     // location (e.g. "Marulas, Valenzuela") — forward-geocode it so the ticket
